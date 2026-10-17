@@ -1,6 +1,8 @@
 ---
 name: performance-profiling
 description: Use when a Go service is slow or expensive and someone proposes an optimization, when exposing pprof or debug endpoints, adding a trace or flight recorder, committing or refreshing default.pgo, reading -gcflags=-m output, adding a sync.Pool, or writing benchmarks to justify a performance change. Covers pprof on an internal listener only, CPU and heap profiles before code changes, runtime/trace FlightRecorder snapshots on SLO misses, PGO from merged production profiles, escape analysis, capped pointer-only sync.Pool, and CPU-seconds and bytes allocated per request.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Performance profiling

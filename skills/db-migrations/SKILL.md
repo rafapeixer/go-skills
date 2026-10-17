@@ -1,6 +1,8 @@
 ---
 name: db-migrations
 description: Use when adding or reviewing Postgres schema migrations in a Go service, choosing a migration tool, deciding where and when migrations run during a deploy, or changing a table that live traffic uses. Covers goose v3 with embedded SQL files and the Provider API, running migrations as a separate Job instead of on every replica's startup, expand/contract across releases, lock_timeout in every migration, CREATE INDEX CONCURRENTLY with NO TRANSACTION, SELECT * and cached plans after DDL, and testing migration conventions without a database.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Database migrations

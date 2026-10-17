@@ -1,6 +1,8 @@
 ---
 name: json-v2
 description: Use when writing or reviewing Go code that marshals or unmarshals JSON, adds json struct tags, writes MarshalJSON or UnmarshalJSON methods, decodes request bodies, inspects JSON errors, upgrades a service to Go 1.27, or considers encoding/json/v2, jsontext or a third-party JSON library such as jsoniter or sonic. Covers staying on encoding/json at the Go 1.26 floor and gating encoding/json/v2 code, omitzero vs omitempty, branching on JSON error types instead of text, testing v1 to v2 behavior differences (duplicate names, invalid UTF-8, case, nil slices), MarshalJSONTo and UnmarshalJSONFrom, strict decoding, third-party libraries, and the GOEXPERIMENT=nojsonv2 opt-out.
+metadata:
+  verified: 2026-10-17
 ---
 
 # JSON with encoding/json and encoding/json/v2

@@ -1,6 +1,8 @@
 ---
 name: ci-guardrails
 description: Use when writing or reviewing a CI pipeline, pre-commit hook or coding-agent hook for a Go module, a .golangci.yml, or a release build step. Covers gofmt, go vet, go fix -diff modernizers and go test -race as gates, the govulncheck exit-code trap and binary-mode scans, golangci-lint v2 config with govet, staticcheck, errcheck, gosec and bodyclose, pinning tools with tool directives, #nosec and nolint hygiene, GOSUMDB/GOPRIVATE/go.sum, and CGO_ENABLED=0 -trimpath release builds.
+metadata:
+  verified: 2026-10-17
 ---
 
 # CI guardrails

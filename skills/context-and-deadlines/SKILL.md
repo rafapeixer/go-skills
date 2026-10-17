@@ -1,6 +1,8 @@
 ---
 name: context-and-deadlines
 description: Use when writing or reviewing Go code that accepts, creates, passes or stores a context.Context, sets timeouts on requests or outbound calls, runs work after an HTTP response, or tests timeout behavior. Covers ctx as first parameter, request deadlines that outbound calls derive from, WithTimeoutCause and context.Cause, WithoutCancel for post-response work, AfterFunc, ctx.Err checks, and t.Context with testing/synctest.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Context and deadlines

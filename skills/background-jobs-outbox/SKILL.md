@@ -1,6 +1,8 @@
 ---
 name: background-jobs-outbox
 description: Use when writing or reviewing Go code that runs work outside the request on Postgres, enqueues a job or event after a business write, builds a worker, relay or job table, uses LISTEN/NOTIFY, picks a job queue library, or decides how jobs retry, fail and shut down. Covers enqueueing in the same transaction with River's InsertTx or an outbox row, River as the default and when to hand-roll an outbox relay, claiming with FOR UPDATE SKIP LOCKED and a lease, LISTEN/NOTIFY only as a wake-up, idempotent handlers under at-least-once delivery, worker concurrency bounded by the pool, retries with backoff and a dead state, graceful worker shutdown, River migrations before workers, and River Pro paid features.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Background jobs and the outbox

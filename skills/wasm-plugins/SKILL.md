@@ -1,6 +1,8 @@
 ---
 name: wasm-plugins
 description: Use when letting customers or third parties extend a Go service with their own code (plugins, user-defined functions, rules, filters, webhooks run in-process), when choosing between the plugin package, subprocesses and WebAssembly, when building a Go guest for GOOS=wasip1, or when reviewing a wazero host. Covers wazero instead of plugin.Open or exec, wasip1 reactors with //go:wasmexport and -buildmode=c-shared, explicit capabilities and os.Root mounts, CPU limits through context cancellation, memory page limits, compiling once and instantiating per call, and when TinyGo is worth it.
+metadata:
+  verified: 2026-10-17
 ---
 
 # WebAssembly plugins

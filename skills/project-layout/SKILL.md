@@ -1,6 +1,8 @@
 ---
 name: project-layout
 description: Use when creating a new Go backend service, adding a package or directory to one, deciding where an interface or shared helper goes, or deciding whether to split a service. Covers cmd/ and internal/, packages by domain instead of by layer, consumer-side interfaces and concrete return types, package naming without util or pkg/, and when to split a modular monolith into services.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Project layout

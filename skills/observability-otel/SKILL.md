@@ -1,6 +1,8 @@
 ---
 name: observability-otel
 description: Use when adding or reviewing OpenTelemetry traces, metrics or OTel logs in a Go service, wiring otelhttp into a server or client, naming spans or choosing span and metric attributes, configuring sampling or the Collector's tail sampling, or when the telemetry bill grows. Covers SDK setup and Shutdown in run, otelhttp NewHandler and NewTransport, route-based span names and http.route, cardinality, parent-based and tail sampling, views that drop instruments and attributes, the otelslog bridge, measuring overhead, and why SDK instrumentation beats eBPF auto-instrumentation as a default.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Observability with OpenTelemetry

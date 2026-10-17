@@ -1,6 +1,8 @@
 ---
 name: go-version-policy
 description: Use when creating a go.mod, choosing or reviewing its go and toolchain lines, upgrading Go, reacting to a dependency that raised its go line, setting GOTOOLCHAIN in CI, pinning developer tools, or writing code or docs that need a Go release newer than the module's floor. Covers the oldest-supported-release floor (go 1.26.0 today), GOTOOLCHAIN=local in CI, what the go line changes in language semantics, runtime and GODEBUG defaults, go fix modernizers on every floor bump, the tool directive, version gating with build tags and go/version, and the six-month review cadence.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Go version policy

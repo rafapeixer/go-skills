@@ -1,6 +1,8 @@
 ---
 name: logging-slog
 description: Use when writing or reviewing logging in a Go service with log/slog, choosing a handler or log level, adding request or trace IDs to logs, logging values that may hold secrets or PII, or logging on a hot path. Covers injecting *slog.Logger, the *Context methods with a context-aware Handler, LogValuer redaction, JSONHandler with a fixed key vocabulary, levels and sampling, LogAttrs, and slog.NewMultiHandler.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Logging with slog

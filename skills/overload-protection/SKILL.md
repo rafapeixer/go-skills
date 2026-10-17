@@ -1,6 +1,8 @@
 ---
 name: overload-protection
 description: Use when writing or reviewing Go code that decides what a service does above capacity, adds retries to an outbound call, wraps a dependency, or adds a concurrency or rate limit to an HTTP server. Covers capping in-flight requests with an AIMD or fixed limiter, shedding with an immediate 503 and Retry-After instead of queueing, retrying only idempotent operations with at most 3 attempts and full-jitter backoff, retrying at one layer, a per-client retry budget of about 10%, a fail-fast bulkhead per dependency, and ctx.Err checks before expensive work, all with the standard library.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Overload protection

@@ -1,6 +1,8 @@
 ---
 name: secure-defaults
 description: Use when writing or reviewing Go code that generates tokens or keys, opens files named by users, configures crypto/tls, encrypts data or derives keys, renders HTML, compares secrets, sets cookies, or must run in FIPS 140-3 mode. Covers crypto/rand.Text, os.Root, leaving tls.Config defaults (post-quantum key exchange) alone, InsecureSkipVerify, stdlib AEAD/HKDF/SHA-3/ML-KEM, html/template, constant-time comparison, cookie flags and GOFIPS140.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Secure defaults

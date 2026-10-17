@@ -1,0 +1,3 @@
+# Normalize line endings so scripts and excerpt checks behave the same on every OS.
+* text=auto eol=lf
+*.sum -diff

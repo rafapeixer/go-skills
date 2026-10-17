@@ -1,6 +1,8 @@
 ---
 name: concurrency
 description: Use when writing or reviewing Go code that starts goroutines, fans work out over a list, runs background workers, shares state between goroutines, or tests concurrent code for leaks. Covers errgroup.WithContext and SetLimit, sync.WaitGroup.Go, goroutine ownership and shutdown, no fire-and-forget in handlers, mutex vs channel, and leak detection with testing/synctest.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Concurrency

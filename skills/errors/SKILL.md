@@ -1,6 +1,8 @@
 ---
 name: errors
 description: Use when writing or reviewing Go code that creates, wraps, returns, inspects, logs or maps errors to HTTP status or exit codes. Covers wrapping with %w, sentinel vs typed errors, errors.Is and errors.AsType, translating errors at package boundaries, handling an error once, and errors.Join.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Errors

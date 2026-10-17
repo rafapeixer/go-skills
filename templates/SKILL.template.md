@@ -1,6 +1,8 @@
 ---
 name: <skill-name>
 description: Use when <the concrete situation that should trigger this skill: writing X, reviewing Y, deciding Z>. Covers <the 3 to 5 sub-topics in one line>.
+metadata:
+  verified: 2026-10-17
 ---
 
 # <Skill title>

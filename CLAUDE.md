@@ -50,13 +50,34 @@ go-skills/
 │   └── SKILL.template.md        # the template every new skill starts from
 │
 ├── scripts/
-│   ├── validate.sh              # checks frontmatter, sections, length, counts and README indexes
-│   └── test-examples.sh         # good: gofmt + go vet + go test; bad: go build
+│   ├── validate.sh              # format, Go floor (GO_FLOOR), excerpts match examples, README indexes
+│   ├── test-examples.sh         # good: gofmt + go vet + go test (-race in CI); bad: build, tests compile
+│   └── check-freshness.sh       # fails when the floor loses support or a skill is unverified for 6 months
+│
+├── .gitattributes               # LF everywhere, so scripts and excerpt checks behave the same on every OS
 │
 └── .github/
-    └── workflows/
-        └── ci.yml               # runs validate.sh and test-examples.sh on every push and PR
+    ├── workflows/
+    │   ├── ci.yml               # runs validate.sh and test-examples.sh on every push and PR
+    │   └── freshness.yml        # runs check-freshness.sh on the 1st of every month
+    ├── pull_request_template.md # what changes, what breaks without it, sources, checklist
+    └── ISSUE_TEMPLATE/          # rule-change.md, new-skill.md
 ```
+
+### Guardrails, not prose
+
+Everything that can be checked is checked by a script, so a wrong change fails CI instead of relying on review:
+
+| Mistake | Caught by |
+|---|---|
+| Missing or misordered section, wrong counts, bad frontmatter | `validate.sh` |
+| `SKILL.md` excerpt that is not in the tested examples | `validate.sh` (every excerpt line must exist in `examples/good` or `examples/bad`) |
+| Example on a Go version other than the floor | `validate.sh` (`GO_FLOOR`) |
+| Example that does not compile, fails vet, races or fails tests | `test-examples.sh` |
+| Floor older than the oldest supported Go release | `check-freshness.sh`, monthly |
+| Facts not re-verified for more than six months | `check-freshness.sh`, via `metadata.verified` |
+
+When you add a rule a script could enforce, add the check in the same PR.
 
 The catalog is released in waves. Each skill is added in its own PR.
 
@@ -76,8 +97,12 @@ Every `SKILL.md` follows the Agent Skills convention: YAML frontmatter followed 
 ---
 name: errors
 description: Use when writing or reviewing Go code that creates, wraps, returns, inspects or logs errors. Covers wrapping with context, sentinel vs typed errors, errors.Is/As, and what to log vs return.
+metadata:
+  verified: 2026-10-17
 ---
 ```
+
+`metadata.verified` is the date the skill's facts (APIs, defaults, versions) were last checked against primary sources. Update it whenever you re-check or change facts; the monthly freshness job fails once it is more than six months old.
 
 Required sections, in this order:
 
@@ -101,7 +126,7 @@ Length target: 100 to 400 lines per `SKILL.md`. Never pad a skill to reach the m
 - **Examples must compile.** Good examples must also be gofmt-clean and pass `go vet` and `go test`. Bad examples only need `go build`, because some of their mistakes are exactly what `go vet` reports. A good example is a tiny `main.go` or `_test.go`, never a snippet that cannot run.
 - **Bad examples are real mistakes**, the ones agents and junior developers actually make, not strawmen. Comment each mistake inline.
 - **Prefer the standard library.** Mention a third-party package only when the standard library has no reasonable answer (for example `pgx` for Postgres, `errgroup` for concurrent error handling). Say why.
-- **Target supported Go.** The floor is the oldest Go release that still receives security fixes: today `go 1.26.0`. Every example declares it, and CI tests against 1.26 and the latest stable release with `GOTOOLCHAIN=local`. Raise the floor every six months, when a new Go release ships and the oldest one loses support.
+- **Target supported Go.** The floor is the oldest Go release that still receives security fixes: today `go 1.26.0`. Every example declares it, and CI tests against 1.26 and the latest stable release with `GOTOOLCHAIN=local`. Raise the floor every six months, when a new Go release ships and the oldest one loses support: change `GO_FLOOR` in `scripts/validate.sh`, every example `go.mod`, this file and the READMEs in one commit, then run `go fix ./...` in every example.
 - **Version-gate newer features.** A rule that needs a release newer than the floor says so inline, for example "(Go 1.27+)", because an agent following it on the floor would generate code that does not compile.
 - Use what the floor gives you: `errors.AsType`, `sync.WaitGroup.Go`, `testing/synctest`, `t.Context()`, `b.Loop()`, `os.Root`, `crypto/rand.Text`, `http.CrossOriginProtection`, `new(expr)`, iterators. Do not teach workarounds for older versions.
 - **Dependencies have floors too.** pgx `>= v5.9.2`, because earlier versions lack the fix for a simple-protocol SQL injection. State the minimum version whenever a rule depends on a third-party package.

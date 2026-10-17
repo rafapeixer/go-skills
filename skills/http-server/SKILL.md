@@ -1,6 +1,8 @@
 ---
 name: http-server
 description: Use when writing or reviewing a Go HTTP server with net/http: creating the http.Server, registering routes and middleware, reading request bodies, adding health checks, or handling SIGTERM. Covers explicit server timeouts, an own ServeMux with method and wildcard patterns, MaxBytesReader, healthz vs readyz, graceful shutdown order, and http.CrossOriginProtection.
+metadata:
+  verified: 2026-10-17
 ---
 
 # HTTP server

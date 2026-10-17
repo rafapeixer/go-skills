@@ -35,3 +35,5 @@ bash scripts/test-examples.sh  # good: gofmt + go vet + go test; bad: go build
 - Uma skill por PR. Uma mudança lógica por commit.
 - Mensagens de commit, em inglês: `skill(errors): add rule on wrapping with operation name`, `docs(readme): update skill index`, `ci: test against Go stable`.
 - Qualquer mudança em um README ou CONTRIBUTING atualiza a versão em inglês ou português no mesmo commit.
+- Preencha o template de pull request: o que muda, o que quebra sem a mudança e as fontes primárias.
+- Quando conferir ou mudar os fatos de uma skill, coloque essa data em `metadata.verified` no frontmatter dela.

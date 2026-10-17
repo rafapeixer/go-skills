@@ -35,3 +35,5 @@ bash scripts/test-examples.sh  # good: gofmt + go vet + go test; bad: go build
 - One skill per PR. One logical change per commit.
 - Commit messages: `skill(errors): add rule on wrapping with operation name`, `docs(readme): update skill index`, `ci: test against Go stable`.
 - Any change to a README or CONTRIBUTING file updates its Portuguese or English counterpart in the same commit.
+- Fill in the pull request template: what changes, what breaks without it, and primary sources.
+- When you check or change a skill's facts, set `metadata.verified` in its frontmatter to that date.

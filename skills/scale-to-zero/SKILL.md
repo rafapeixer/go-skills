@@ -1,6 +1,8 @@
 ---
 name: scale-to-zero
 description: Use when writing or reviewing a Go service or function that runs on AWS Lambda, Cloud Run, Knative, Fly Machines or a Kubernetes deployment that scales to zero, when deciding what happens in init(), package-level vars or main before the first request, when a dependency should be built lazily, or when a cold start is slow or billed. Covers no I/O in init or package vars, sync.OnceValue/OnceValues for optional dependencies, a lazy database pool with small MinConns and a short connect timeout, SIGTERM/SIGINT handling inside the platform grace period, measuring startup with GODEBUG=inittrace=1 and Lambda Init Duration, and Lambda builds for provided.al2023 on arm64 with lambda.norpc.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Scale to zero

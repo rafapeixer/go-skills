@@ -1,6 +1,8 @@
 ---
 name: sql-queries-and-transactions
 description: Use when writing or reviewing Go code that runs Postgres queries or transactions with pgx v5, choosing between sqlc, an ORM or hand-written Scan, building a query with a dynamic ORDER BY or filter, paginating a list, loading related rows for a page, retrying a transaction, or calling another service while a transaction is open. Covers sqlc with sql_package pgx/v5, $n parameters and allow-listed identifiers, keyset pagination instead of OFFSET, = ANY($1) and batches instead of N+1, a transaction helper that reruns the whole transaction on 40001/40P01 with jitter, the outbox instead of network calls inside a transaction, and per-role statement_timeout and idle_in_transaction_session_timeout.
+metadata:
+  verified: 2026-10-17
 ---
 
 # SQL queries and transactions

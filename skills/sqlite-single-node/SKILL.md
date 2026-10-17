@@ -1,6 +1,8 @@
 ---
 name: sqlite-single-node
 description: Use when deciding whether a Go service can use SQLite as its production database, opening a SQLite file from Go, choosing a SQLite driver, writing SQLite transactions, seeing "database is locked" or SQLITE_BUSY, or setting up SQLite backups and restore. Covers when one node owning the data makes SQLite viable and when to move to Postgres, modernc.org/sqlite as the cgo-free default (ncruces or mattn only with a reason, never crawshaw), WAL, busy_timeout, synchronous and foreign_keys set per connection through the DSN, one writer connection plus a separate read pool, BEGIN IMMEDIATE through _txlock, and continuous backup with Litestream 0.5.2 or later instead of LiteFS or file copies.
+metadata:
+  verified: 2026-10-17
 ---
 
 # SQLite single node

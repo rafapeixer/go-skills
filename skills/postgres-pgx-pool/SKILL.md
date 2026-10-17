@@ -1,6 +1,8 @@
 ---
 name: postgres-pgx-pool
 description: Use when choosing a Postgres driver for a Go service, creating or configuring a connection pool, sizing MaxConns for several replicas, putting PgBouncer in front of Postgres, or handling pool exhaustion. Covers native pgxpool vs database/sql, the pgx version floor, MaxConns from the connection budget, lifetime jitter and ping timeout, bounded acquire with 503, QueryExecMode behind poolers, session state on direct connections, and the pgx 5.11 DSN parser.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Postgres pgx pool

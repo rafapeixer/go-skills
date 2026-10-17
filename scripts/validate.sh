@@ -7,6 +7,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 SECTIONS=("The decision" "The rule" "Why" "Good example" "Bad example" "Checklist" "When not to apply")
+# The oldest Go release that still gets security fixes. Raise it here, in
+# CLAUDE.md and in every example go.mod in the same commit.
+GO_FLOOR=1.26.0
 MIN_LINES=100
 MAX_LINES=400
 
@@ -86,10 +89,40 @@ for dir in "${skills[@]}"; do
     fail "$skill" "When not to apply has no cases"
   fi
 
+  verified=$(printf '%s\n' "$frontmatter" | sed -n 's/^  verified: *//p')
+  if ! [[ "$verified" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+    fail "$skill" "frontmatter needs metadata.verified: YYYY-MM-DD (the date its facts were last checked)"
+  fi
+
   for kind in good bad; do
     if [ ! -f "$dir/examples/$kind/go.mod" ]; then
       fail "$skill" "missing examples/$kind/go.mod"
+      continue
     fi
+    godirective=$(sed -n 's/^go //p' "$dir/examples/$kind/go.mod")
+    if [ "$kind" = good ] && [ "$godirective" != "$GO_FLOOR" ]; then
+      fail "$skill" "examples/good/go.mod declares go $godirective, expected go $GO_FLOOR"
+    fi
+    # A bad example may show an outdated go line, but never one newer than the floor.
+    if [ "$kind" = bad ] && [ "$(printf "%s
+%s
+" "$godirective" "$GO_FLOOR" | sort -V | tail -n 1)" != "$GO_FLOOR" ]; then
+      fail "$skill" "examples/bad/go.mod declares go $godirective, newer than the floor $GO_FLOOR"
+    fi
+
+    # Every line of an inline excerpt must exist in the example files, so the
+    # SKILL.md can never show code that the tested examples do not contain.
+    [ "$kind" = good ] && section="Good example" || section="Bad example"
+    corpus=$(find "$dir/examples/$kind" -type f ! -name go.sum -exec cat {} + | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    while IFS= read -r line; do
+      if ! grep -Fxq -- "$line" <<<"$corpus"; then
+        fail "$skill" "$section excerpt line not found in examples/$kind: $line"
+      fi
+    done < <(section_body "$file" "$section" | awk '
+      /^```(go|sql|yaml|dockerfile)$/ { inside = 1; next }
+      /^```/ { inside = 0; next }
+      inside { gsub(/^[ \t]+|[ \t]+$/, ""); if ($0 != "" && $0 != "...") print }
+    ')
   done
 
   for readme in README.md README.pt-BR.md; do

@@ -1,6 +1,8 @@
 ---
 name: mcp-server-go
 description: Use when writing or reviewing a Go Model Context Protocol (MCP) server that exposes a service's data or actions as tools to coding agents and LLM clients, choosing between stdio and streamable HTTP, deploying it behind a load balancer, or adding authorization to it. Covers the official github.com/modelcontextprotocol/go-sdk, narrow intent-level tools instead of shell or SQL runners, typed mcp.AddTool handlers with input and output structs and a tightened JSON schema, StreamableHTTPOptions.Stateless with PropagateRequestCancellation, auth.RequireBearerToken with protected resource metadata and audience checks, a fail-fast concurrency cap and per-call deadline, and tool errors vs protocol errors.
+metadata:
+  verified: 2026-10-17
 ---
 
 # MCP server in Go

@@ -1,6 +1,8 @@
 ---
 name: container-runtime-tuning
 description: Use when writing a Dockerfile or Kubernetes manifest for a Go service, setting CPU or memory limits, choosing GOMAXPROCS, GOMEMLIMIT or GOGC, reviewing automaxprocs or heap ballast code, picking a base image, or alerting on Go memory and GC behavior in containers. Covers container-aware GOMAXPROCS (Go 1.25+), CPU limits vs requests, GOMEMLIMIT from the Downward API, GOGC and ballast, GC CPU from runtime/metrics, and distroless/scratch multi-arch images.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Container runtime tuning

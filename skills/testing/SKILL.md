@@ -1,6 +1,8 @@
 ---
 name: testing
 description: Use when writing or reviewing Go tests for a service, choosing test doubles, testing database code, timeouts, retries or HTTP wiring, or adding fuzz tests and benchmarks. Covers table tests with t.Run, hand-written fakes over consumer-side interfaces, real Postgres instead of sqlmock, testing/synctest for time, end-to-end tests through run(), fuzzing parsers, b.Loop benchmarks with benchstat, and t.Context.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Testing

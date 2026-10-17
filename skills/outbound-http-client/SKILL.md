@@ -1,6 +1,8 @@
 ---
 name: outbound-http-client
 description: Use when writing or reviewing Go code that calls another service over HTTP with net/http: creating an http.Client or http.Transport, sending requests with Do or Get, reading or closing response bodies, wrapping a third-party API, or fetching a URL that a user supplied. Covers one reused client per upstream, a cloned DefaultTransport with MaxIdleConnsPerHost raised, Client.Timeout plus request context, draining and closing bodies for connection reuse, bounded body reads, transparent gzip, and allow-listing URLs and redirects against SSRF.
+metadata:
+  verified: 2026-10-17
 ---
 
 # Outbound HTTP client

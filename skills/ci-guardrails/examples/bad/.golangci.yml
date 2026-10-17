@@ -1,0 +1,21 @@
+# MISTAKE: a v1 configuration copied from an old answer. With no `version: "2"` key,
+# golangci-lint v2 refuses to load it; run `golangci-lint migrate` instead of downgrading the linter.
+run:
+  timeout: 5m
+
+linters:
+  disable-all: true # MISTAKE: v1 key; in v2 this is `default: none`.
+  enable:
+    - govet
+    - errcheck # MISTAKE: no staticcheck, gosec or bodyclose, so the leaked body and the math/rand token pass.
+
+linters-settings: # MISTAKE: v1 key; v2 moved settings under linters.settings.
+  errcheck:
+    exclude-functions:
+      - net/http.Get # MISTAKE: excludes the exact call whose error and body are dropped in main.go.
+
+issues:
+  exclude-rules: # MISTAKE: v1 key; v2 uses linters.exclusions.rules.
+    - linters:
+        - gosec
+      text: ".*" # MISTAKE: a blanket exclusion is the config-file version of a bare //nolint.

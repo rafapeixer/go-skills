@@ -1,0 +1,55 @@
+# GitHub Actions workflow. In a real repository it lives at .github/workflows/ci.yml;
+# here it is data, so it does not run in this repository.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod # toolchain policy: see the go-version-policy skill
+      - name: go.mod and go.sum are tidy and committed
+        run: go mod tidy -diff
+      - name: gofmt (prints files, exits 0, so fail on output)
+        run: |
+          gofmt -l . > "$RUNNER_TEMP/gofmt.txt"
+          cat "$RUNNER_TEMP/gofmt.txt"
+          test ! -s "$RUNNER_TEMP/gofmt.txt"
+      - name: go vet
+        run: go vet ./...
+      - name: go fix modernizers (prints a diff, exits 0, so fail on output)
+        run: |
+          go fix -diff ./... > "$RUNNER_TEMP/fix.diff"
+          cat "$RUNNER_TEMP/fix.diff"
+          test ! -s "$RUNNER_TEMP/fix.diff"
+      - name: tests with the race detector
+        run: go test -race ./...
+      - name: govulncheck gate (text mode exits non-zero on reachable vulns)
+        run: go tool -modfile=tools.mod govulncheck ./...
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0
+
+  release:
+    needs: check
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: reproducible build, VCS stamping left on
+        run: CGO_ENABLED=0 go build -trimpath -o dist/buildinfo .
+      - name: scan the artifact that ships
+        run: go tool -modfile=tools.mod govulncheck -mode binary dist/buildinfo

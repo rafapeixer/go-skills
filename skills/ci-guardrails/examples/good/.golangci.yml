@@ -1,0 +1,36 @@
+# golangci-lint v2 configuration. A v1 file (no version key) does not load in v2;
+# convert one with `golangci-lint migrate`.
+version: "2"
+
+linters:
+  # standard = errcheck, govet, ineffassign, staticcheck, unused.
+  default: standard
+  enable:
+    - bodyclose
+    - gosec
+    - nolintlint
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment # memory layout, not correctness
+    gosec:
+      config:
+        global:
+          # A #nosec must name the rule and carry "-- reason", or the finding stands.
+          nosec-require-rules: enabled
+          nosec-require-justification: enabled
+    errcheck:
+      check-type-assertions: true
+      check-blank: true # `v, _ := f()` drops the error silently
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    generated: strict
+    rules:
+      # Test helpers may read fixture paths built from test data.
+      - path: _test\.go
+        linters:
+          - gosec
+        text: G304

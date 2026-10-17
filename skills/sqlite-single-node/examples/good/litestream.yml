@@ -1,0 +1,10 @@
+# Litestream >= 0.5.2 runs next to the service (sidecar or the same container)
+# and streams every committed change of the file to object storage.
+# On a new node, restore before the service starts, e.g.:
+#   litestream restore -if-db-not-exists -if-replica-exists /var/lib/app/app.db
+# Litestream 0.5 takes one replica per database (`replica`, not `replicas`),
+# and only one process may replicate into a given bucket path.
+dbs:
+  - path: /var/lib/app/app.db
+    replica:
+      url: s3://example-backups/app

@@ -115,6 +115,8 @@ Medido com `claude plugin eval` ([`evals/`](evals/)): o mesmo prompt roda com e 
 
 O plugin carregou a skill certa em todas as execuções. Onde o modelo já acerta, as skills mantêm o acerto; o ganho aparece nas decisões que exigem conhecimento atual e específico. A suíte cresce a cada skill.
 
+**Sob carga:** o [BENCHMARKS.pt-BR.md](BENCHMARKS.pt-BR.md) roda o mesmo serviço escrito em Go (com e sem go-skills), Java e Python em containers do tamanho de um t4g.micro da AWS, 3 vezes por cenário. O Go atendeu 5.000 req/s por réplica com 15 MiB de memória, recusou a sobrecarga com 503 rápido em vez de desabar e saiu de 33% a 67% mais barato no EC2.
+
 ---
 
 ## Como é uma skill

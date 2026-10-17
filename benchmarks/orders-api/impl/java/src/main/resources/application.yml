@@ -1,0 +1,58 @@
+server:
+  port: ${PORT:8080}
+  # On SIGTERM: stop accepting connections, let in-flight requests finish.
+  shutdown: graceful
+  error:
+    whitelabel:
+      enabled: false
+  tomcat:
+    connection-timeout: 5s
+    # Must exceed the load balancer idle timeout (ALB default 60s), otherwise
+    # the LB may reuse a connection Tomcat just closed and return 502s.
+    keep-alive-timeout: 65s
+    max-connections: 4096
+
+spring:
+  application:
+    name: orders-api
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
+  lifecycle:
+    # Keep below the orchestrator's stop timeout (e.g. ECS stopTimeout / docker stop -t).
+    timeout-per-shutdown-phase: 20s
+  web:
+    resources:
+      add-mappings: false
+  mvc:
+    problemdetails:
+      enabled: false
+  jackson:
+    deserialization:
+      accept-float-as-int: false
+      fail-on-null-for-primitives: true
+    mapper:
+      allow-coercion-of-scalars: false
+
+logging:
+  structured:
+    format:
+      console: ecs
+
+orders:
+  database-url: ${DATABASE_URL}
+  db:
+    # 8 replicas x 8 = 64 of the 80 allowed connections, leaving headroom for
+    # extra replicas during rolling deploys (10 x 8 = 80).
+    pool-size: ${DB_POOL_SIZE:8}
+    connection-timeout: 2s
+    statement-timeout: 5s
+  pricing:
+    url: ${PRICING_URL}
+    connect-timeout: 500ms
+    request-timeout: 1s
+    quote-deadline: 2s
+    max-in-flight: 64
+    per-quote-concurrency: 10

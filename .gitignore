@@ -18,3 +18,7 @@ Thumbs.db
 
 # Eval run output
 evals/results/
+
+# Benchmark run output (large; regenerate with harness/all.sh)
+benchmarks/**/results/
+benchmarks/**/*.log

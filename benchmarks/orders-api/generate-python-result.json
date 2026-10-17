@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.296",
+  "startedAt": "2026-10-17T17:38:01.918Z",
+  "durationSeconds": 370,
+  "costUsd": 1.370886,
+  "partial": false,
+  "suite": {
+    "root": "D:\\LURIE LABS\\base-repositorios\\go-skills",
+    "ablation": "with-without",
+    "threshold": 0,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "go-skills",
+        "version": "0.3.0",
+        "path": "D:\\LURIE LABS\\base-repositorios\\go-skills"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "orders-api",
+      "dir": "benchmarks\\orders-api\\generate-python\\orders-api",
+      "source": "prose",
+      "promptMarkdown": "Build a production-ready Python HTTP service called `orders-api` with Python 3.13, FastAPI, uvicorn and asyncpg. Write every file in the current directory: `requirements.txt` with pinned versions and the application package; the app must start with `uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2`.\n\n## Deployment\n\n- Runs in containers on AWS EC2 t4g.micro instances (2 vCPU, 1 GiB memory), **8 replicas** behind a load balancer.\n- Postgres is a single RDS instance that allows **80 connections in total** for this service.\n- Configuration comes from environment variables: `PORT` (default `8080`), `DATABASE_URL` (a Postgres URL), `PRICING_URL` (base URL of the pricing service).\n- The container receives SIGTERM on deploys.\n\n## Database\n\nThe schema already exists; do not create or migrate it.\n\n```sql\nCREATE TABLE orders (\n  id          bigserial PRIMARY KEY,\n  customer_id bigint      NOT NULL,\n  status      text        NOT NULL DEFAULT 'new',\n  created_at  timestamptz NOT NULL DEFAULT now()\n);\nCREATE INDEX orders_customer_created ON orders (customer_id, created_at DESC, id DESC);\n\nCREATE TABLE order_items (\n  order_id bigint NOT NULL REFERENCES orders (id),\n  sku      text   NOT NULL,\n  qty      int    NOT NULL CHECK (qty > 0),\n  PRIMARY KEY (order_id, sku)\n);\n```\n\n## Pricing service\n\n`GET {PRICING_URL}/prices/{sku}` returns `200 {\"sku\":\"A1\",\"cents\":1250}` or `404` for an unknown SKU. It is another team's service: usually ~20 ms, sometimes much slower.\n\n## API\n\nAll bodies are JSON. Errors return `{\"error\":\"<message>\"}`.\n\n1. `POST /orders` with `{\"customer_id\":42,\"items\":[{\"sku\":\"A1\",\"qty\":2}]}`\n   - Creates the order and its items atomically. 1 to 100 items, `qty` ≥ 1, no duplicate SKUs, `customer_id` > 0.\n   - `201` with `{\"id\":123}`. Invalid input: `400`.\n2. `GET /orders/{id}`\n   - `200` with `{\"id\":123,\"customer_id\":42,\"status\":\"new\",\"created_at\":\"<RFC 3339>\",\"items\":[{\"sku\":\"A1\",\"qty\":2}]}`. Unknown id: `404`.\n3. `GET /customers/{id}/orders?limit=20&cursor=<cursor>`\n   - The customer's orders, newest first, each with its items (same shape as above), as `{\"orders\":[...],\"next_cursor\":\"<cursor or empty>\"}`.\n   - `limit` defaults to 20, max 100. `next_cursor` is empty on the last page. Customers can have tens of thousands of orders.\n4. `GET /orders/{id}/quote`\n   - Looks up the price of every item from the pricing service and returns `{\"order_id\":123,\"total_cents\":4500}`. Unknown order: `404`. Any SKU the pricing service does not know: `422`. Pricing service failing or too slow: `503`.\n5. `GET /healthz` returns `200`.",
+      "runsPerCase": 1,
+      "timeoutSeconds": 2400,
+      "maxTurns": 80,
+      "graders": [
+        {
+          "name": "wrote-build-file",
+          "type": "file_exists",
+          "weight": 1,
+          "config": {
+            "path": "requirements.txt",
+            "exists": true
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 15,
+            "costUsd": 0.7810362000000001,
+            "judgeCostUsd": 0,
+            "durationSeconds": 205,
+            "startedAt": "2026-10-17T17:38:02.060Z",
+            "error": null,
+            "tracePath": "C:\\Users\\rafapeixer\\AppData\\Local\\Temp\\claude-eval-9aAfBf\\out\\trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "wrote-build-file",
+                "passed": true,
+                "weight": 1,
+                "explanation": "requirements.txt exists as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 13,
+            "costUsd": 0.5898498,
+            "judgeCostUsd": 0,
+            "durationSeconds": 165,
+            "startedAt": "2026-10-17T17:41:27.185Z",
+            "error": null,
+            "tracePath": "C:\\Users\\rafapeixer\\AppData\\Local\\Temp\\claude-eval-3RtAya\\out\\trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "wrote-build-file",
+                "passed": true,
+                "weight": 1,
+                "explanation": "requirements.txt exists as expected",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1,
+        "scoreWithout": 1,
+        "passRateWithout": 1,
+        "delta": 0
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 1,
+    "overallScore": 1,
+    "overallPassRate": 1,
+    "meanDelta": 0
+  }
+}

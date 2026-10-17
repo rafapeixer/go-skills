@@ -21,6 +21,28 @@ Measured in October 2026 on Docker Desktop, with container limits that reproduce
 
 SLO: p99 below 200 ms and fewer than 1% errors.
 
+### Tuned Go: twice the capacity
+
+A fourth Go version, [go-tuned](benchmarks/orders-api/impl/go-tuned/), starts from the go-skills version and applies two changes guided by a CPU profile, under the same fairness rules (same contract, at most 8 connections per replica, no caching of prices or reads). [TUNING.md](benchmarks/orders-api/impl/go-tuned/TUNING.md) lists every change and its measured effect.
+
+1. **One database round trip per read.** An order and its items come from the same query (`LEFT JOIN LATERAL` with `array_agg`) instead of one query for orders and another for items.
+2. **A sized pricing client with a circuit breaker.** The cap on concurrent pricing calls was 64 with a 100 ms wait, and that guessed number was the only cause of the 503s at 6,000 req/s. It is now 256, sized by Little's law, with no wait; every call has a 1 s budget; and a circuit breaker opens after 5 consecutive failures.
+
+Verified separately, 3 runs:
+
+| | Go with go-skills | **Tuned Go** |
+|---|---|---|
+| Capacity within SLO | 5,000 · 5,000 · 5,000 | **10,000 · 8,000 · 10,000** |
+| 6,000 req/s | 1.3% errors, p99 130 ms | **0%, p99 32 ms** |
+| 8,000 req/s | 4.8% errors, p99 132 ms | **0%, p99 32 ms** |
+| 10,000 req/s | 17% errors, p99 143 ms | **0.65% errors, p99 47 ms** |
+| 12,000 / 14,000 req/s | — | 18% / 39% fast 503s, p99 ~60 ms |
+| CPU per request at 3,000 req/s | 0.305 ms | **0.277 ms** (−9%) |
+| p99 with pricing at 1.5 s | 1,594 ms | **3 ms** |
+| Peak memory | 35 MiB | 54 MiB |
+
+One caveat: in the 8-replica scenario (S2), one of 5 tuned runs hit a database slowdown that filled the pools (65 connections) and produced 0.5% errors; the other 4 were clean, and the go-skills version was clean in all 5. The logs show the database slowing down for every operation at once, not the service; it is recorded here because it happened.
+
 **Plain reading:** a warm JVM delivers 60% of Go's capacity per replica with 18 times the memory, needs to warm up before it can take load, and collapses past its limit. Python costs 2.6 times more CPU per request. Go's biggest difference is not in the averages but under pressure: flat memory, no warm-up, and controlled degradation when load exceeds capacity.
 
 ---
@@ -190,6 +212,8 @@ Best instance for each language, respecting memory (Java's 928 MiB peak does not
 US$ per month in us-east-1; "SP" is São Paulo (sa-east-1). Application tier only; RDS is the same for all.
 
 **Go's savings:** 33% to 50% against Java and 56% to 67% against Python, depending on load.
+
+**With tuned Go:** 2 × t4g.micro at 1,000 and 5,000 req/s (US$ 12 and US$ 41) and **3 × t4g.micro at 20,000 req/s (US$ 163, SP: US$ 174)**, against Java's 10 t4g.small and Python's 24 t4g.micro. Half the instances of the go-skills version cost only 10% less because, in unlimited mode, 3 instances near their limit pay for surplus CPU; on a family without credits (c7g, m7g) the gap would be wider. The model uses CPU per request measured at 3,000 req/s, which is conservative: at 10,000 req/s tuned Go spent 0.18 ms per request.
 
 ### Full table
 

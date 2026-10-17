@@ -21,6 +21,28 @@ Medido em outubro de 2026, em Docker Desktop, com limites de container que repro
 
 SLO: p99 abaixo de 200 ms e menos de 1% de erros.
 
+### Go otimizado: o dobro da capacidade
+
+Uma quarta versão em Go, [go-tuned](benchmarks/orders-api/impl/go-tuned/), parte da versão com go-skills e aplica duas mudanças guiadas por perfil de CPU, com as mesmas regras de justiça (mesmo contrato, no máximo 8 conexões por réplica, nenhum cache de preços ou de leituras). O [TUNING.md](benchmarks/orders-api/impl/go-tuned/TUNING.md) mostra cada mudança e o efeito medido.
+
+1. **Uma ida ao banco por leitura.** Pedido e itens vêm na mesma query (`LEFT JOIN LATERAL` com `array_agg`), em vez de uma query para os pedidos e outra para os itens.
+2. **Cliente de preços dimensionado e com circuit breaker.** O limite de chamadas simultâneas ao serviço de preços era 64 com espera de 100 ms, e esse número chutado era a única causa dos 503 a 6.000 req/s. Agora é 256, calculado pela lei de Little e sem espera; cada chamada tem orçamento de 1 s; e um circuit breaker abre depois de 5 falhas seguidas.
+
+Verificado à parte, 3 rodadas:
+
+| | Go com go-skills | **Go otimizado** |
+|---|---|---|
+| Capacidade dentro do SLO | 5.000 · 5.000 · 5.000 | **10.000 · 8.000 · 10.000** |
+| 6.000 req/s | 1,3% de erros, p99 130 ms | **0%, p99 32 ms** |
+| 8.000 req/s | 4,8% de erros, p99 132 ms | **0%, p99 32 ms** |
+| 10.000 req/s | 17% de erros, p99 143 ms | **0,65% de erros, p99 47 ms** |
+| 12.000 / 14.000 req/s | — | 18% / 39% de 503 rápidos, p99 ~60 ms |
+| CPU por requisição a 3.000 req/s | 0,305 ms | **0,277 ms** (−9%) |
+| p99 com o serviço de preços em 1,5 s | 1.594 ms | **3 ms** |
+| Pico de memória | 35 MiB | 54 MiB |
+
+Uma ressalva: no cenário de 8 réplicas (S2), uma das 5 rodadas do Go otimizado teve uma lentidão do banco que encheu os pools (65 conexões) e gerou 0,5% de erros; as outras 4 ficaram limpas, e a versão com go-skills ficou limpa nas 5. Pela leitura dos logs, foi o banco que ficou lento para todas as operações ao mesmo tempo, não o serviço; o registro fica aqui porque aconteceu.
+
 **Leitura honesta:** Java aquecido entrega 60% da capacidade do Go por réplica, com 18 vezes mais memória, precisa aquecer antes de aguentar carga, e desaba quando passa do limite. Python custa 2,6 vezes mais CPU por requisição. A maior diferença do Go não está na média, e sim no comportamento sob pressão: memória plana, nenhum aquecimento, e degradação controlada quando a carga passa da capacidade.
 
 ---
@@ -190,6 +212,8 @@ Melhor instância para cada linguagem, já respeitando a memória (o pico do Jav
 Valores em US$ por mês em us-east-1; "SP" é a região de São Paulo (sa-east-1). Só a camada de aplicação; o RDS é o mesmo para todos.
 
 **Economia do Go:** de 33% a 50% contra Java e de 56% a 67% contra Python, conforme a carga.
+
+**Com o Go otimizado:** 2 × t4g.micro a 1.000 e 5.000 req/s (US$ 12 e US$ 41) e **3 × t4g.micro a 20.000 req/s (US$ 163, SP: US$ 174)**, contra 10 t4g.small do Java e 24 t4g.micro do Python. Metade das instâncias da versão com go-skills custa só 10% menos porque, no modo unlimited, 3 instâncias perto do limite pagam excedente de CPU; numa família sem créditos (c7g, m7g) a diferença seria maior. A conta usa a CPU por requisição medida a 3.000 req/s, que é conservadora: a 10.000 req/s o Go otimizado gastou 0,18 ms por requisição.
 
 ### Tabela completa
 

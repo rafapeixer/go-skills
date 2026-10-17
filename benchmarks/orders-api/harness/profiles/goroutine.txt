@@ -1,0 +1,335 @@
+goroutine profile: total 304
+65 @ 0x488e6e 0x465685 0x832e26 0x490661
+#	0x832e25	net/http.(*persistConn).writeLoop+0xe5	net/http/transport.go:2657
+
+64 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e0fae 0x4e0f9c 0x593de5 0x59d7c5 0x830967 0x64fea3 0x64ffd3 0x831472 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84		runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26		internal/poll/fd_poll_runtime.go:84
+#	0x4e0fad	internal/poll.(*pollDesc).waitRead+0x2ad	internal/poll/fd_poll_runtime.go:89
+#	0x4e0f9b	internal/poll.(*FD).Read+0x29b			internal/poll/fd_unix.go:165
+#	0x593de4	net.(*netFD).Read+0x24				net/fd_posix.go:68
+#	0x59d7c4	net.(*conn).Read+0x44				net/net.go:196
+#	0x830966	net/http.(*persistConn).Read+0x46		net/http/transport.go:2174
+#	0x64fea2	bufio.(*Reader).fill+0x102			bufio/bufio.go:113
+#	0x64ffd2	bufio.(*Reader).Peek+0x52			bufio/bufio.go:152
+#	0x831471	net/http.(*persistConn).readLoop+0x171		net/http/transport.go:2330
+
+55 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e0fae 0x4e0f9c 0x593de5 0x59d7c5 0x811134 0x64fea3 0x64ffd3 0x817453 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84		runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26		internal/poll/fd_poll_runtime.go:84
+#	0x4e0fad	internal/poll.(*pollDesc).waitRead+0x2ad	internal/poll/fd_poll_runtime.go:89
+#	0x4e0f9b	internal/poll.(*FD).Read+0x29b			internal/poll/fd_unix.go:165
+#	0x593de4	net.(*netFD).Read+0x24				net/fd_posix.go:68
+#	0x59d7c4	net.(*conn).Read+0x44				net/net.go:196
+#	0x811133	net/http.(*connReader).Read+0x153		net/http/server.go:812
+#	0x64fea2	bufio.(*Reader).fill+0x102			bufio/bufio.go:113
+#	0x64ffd2	bufio.(*Reader).Peek+0x52			bufio/bufio.go:152
+#	0x817452	net/http.(*conn).serve+0x7f2			net/http/server.go:2123
+
+46 @ 0x488e6e 0x465685 0x833e5d 0x827cfa 0x836b38 0x7d1ccb 0x7d1518 0x7d39d7 0x88519f 0x885187 0x884b7c 0x498cca 0x490661
+#	0x833e5c	net/http.(*persistConn).roundTrip+0x83c	net/http/transport.go:2916
+#	0x827cf9	net/http.(*Transport).roundTrip+0xab9	net/http/transport.go:704
+#	0x836b37	net/http.(*Transport).RoundTrip+0x17	net/http/roundtrip.go:33
+#	0x7d1cca	net/http.send+0x64a			net/http/client.go:264
+#	0x7d1517	net/http.(*Client).send+0x257		net/http/client.go:185
+#	0x7d39d6	net/http.(*Client).do+0x9d6		net/http/client.go:733
+#	0x88519e	net/http.(*Client).Do+0x57e		net/http/client.go:592
+#	0x885186	main.(*pricingClient).price+0x566	orders-api/pricing.go:125
+#	0x884b7b	main.(*pricingClient).total.func1+0xdb	orders-api/pricing.go:75
+#	0x498cc9	sync.(*WaitGroup).Go.func1+0x49		sync/waitgroup.go:258
+
+32 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e0fae 0x4e0f9c 0x593de5 0x59d7c5 0x810cd3 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84		runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26		internal/poll/fd_poll_runtime.go:84
+#	0x4e0fad	internal/poll.(*pollDesc).waitRead+0x2ad	internal/poll/fd_poll_runtime.go:89
+#	0x4e0f9b	internal/poll.(*FD).Read+0x29b			internal/poll/fd_unix.go:165
+#	0x593de4	net.(*netFD).Read+0x24				net/fd_posix.go:68
+#	0x59d7c4	net.(*conn).Read+0x44				net/net.go:196
+#	0x810cd2	net/http.(*connReader).backgroundRead+0x32	net/http/server.go:702
+
+18 @ 0x488e6e 0x466512 0x4664e9 0x48a4ae 0x498b45 0x8848a8 0x8820b3 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x48a4ad	sync.runtime_SemacquireWaitGroup+0x2d		runtime/sema.go:114
+#	0x498b44	sync.(*WaitGroup).Wait+0x84			sync/waitgroup.go:206
+#	0x8848a7	main.(*pricingClient).total+0x3e7		orders-api/pricing.go:91
+#	0x8820b2	main.(*api).quoteOrder+0x1d2			orders-api/handlers.go:225
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28		net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6		net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93		orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28		net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a	orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28		net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d		net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f			net/http/server.go:2087
+
+3 @ 0x488e6e 0x465685 0x79e6f2 0x7a3df3 0x7a4229 0x7a1806 0x87f09d 0x87f7fa 0x88195b 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x79e6f1	golang.org/x/sync/semaphore.(*Weighted).Acquire+0x331	golang.org/x/sync@v0.17.0/semaphore/semaphore.go:74
+#	0x7a3df2	github.com/jackc/puddle/v2.(*Pool[...]).acquire+0xb2	github.com/jackc/puddle/v2@v2.2.2/pool.go:360
+#	0x7a4228	github.com/jackc/puddle/v2.(*Pool[...]).Acquire+0x88	github.com/jackc/puddle/v2@v2.2.2/pool.go:347
+#	0x7a1805	github.com/jackc/pgx/v5/pgxpool.(*Pool).Acquire+0x165	github.com/jackc/pgx/v5@v5.11.0/pgxpool/pool.go:631
+#	0x87f09c	main.(*store).withConn+0x7c				orders-api/db.go:154
+#	0x87f7f9	main.(*store).getOrder+0x99				orders-api/db.go:197
+#	0x88195a	main.(*api).getOrder+0xba				orders-api/handlers.go:154
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6			net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93			orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a		orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d			net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f				net/http/server.go:2087
+
+2 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e0fae 0x4e0f9c 0x593de5 0x59d7c5 0x66d4ab 0x4ba80e 0x5283e9 0x52f57c 0x78524b 0x785366 0x78b457 0x78b0b3 0x7894a5 0x788c7d 0x79a065 0x79f2bc 0x8805c8 0x87fb3c 0x87f1f1 0x87f7fa 0x88195b 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84						runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26						internal/poll/fd_poll_runtime.go:84
+#	0x4e0fad	internal/poll.(*pollDesc).waitRead+0x2ad					internal/poll/fd_poll_runtime.go:89
+#	0x4e0f9b	internal/poll.(*FD).Read+0x29b							internal/poll/fd_unix.go:165
+#	0x593de4	net.(*netFD).Read+0x24								net/fd_posix.go:68
+#	0x59d7c4	net.(*conn).Read+0x44								net/net.go:196
+#	0x66d4aa	github.com/jackc/pgx/v5/pgconn/internal/bgreader.(*BGReader).Read+0xca		github.com/jackc/pgx/v5@v5.11.0/pgconn/internal/bgreader/bgreader.go:100
+#	0x4ba80d	io.ReadAtLeast+0x8d								io/io.go:335
+#	0x5283e8	github.com/jackc/pgx/v5/pgproto3.(*chunkReader).Next+0x288			github.com/jackc/pgx/v5@v5.11.0/pgproto3/chunkreader.go:80
+#	0x52f57b	github.com/jackc/pgx/v5/pgproto3.(*Frontend).Receive+0x3b			github.com/jackc/pgx/v5@v5.11.0/pgproto3/frontend.go:313
+#	0x78524a	github.com/jackc/pgx/v5/pgconn.(*PgConn).peekMessage+0x14a			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:643
+#	0x785365	github.com/jackc/pgx/v5/pgconn.(*PgConn).receiveMessage+0x25			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:667
+#	0x78b456	github.com/jackc/pgx/v5/pgconn.(*ResultReader).receiveMessage+0x36		github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1921
+#	0x78b0b2	github.com/jackc/pgx/v5/pgconn.(*ResultReader).readUntilRowDescription+0x72	github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1888
+#	0x7894a4	github.com/jackc/pgx/v5/pgconn.(*PgConn).execExtendedSuffix+0x1c4		github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1388
+#	0x788c7c	github.com/jackc/pgx/v5/pgconn.(*PgConn).ExecStatement+0x17c			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1328
+#	0x79a064	github.com/jackc/pgx/v5.(*Conn).Query+0x1424					github.com/jackc/pgx/v5@v5.11.0/conn.go:857
+#	0x79f2bb	github.com/jackc/pgx/v5/pgxpool.(*Conn).Query+0x3b				github.com/jackc/pgx/v5@v5.11.0/pgxpool/conn.go:90
+#	0x8805c7	main.loadItems+0x107								orders-api/db.go:283
+#	0x87fb3b	main.(*store).getOrder.func1+0x2bb						orders-api/db.go:206
+#	0x87f1f0	main.(*store).withConn+0x1d0							orders-api/db.go:163
+#	0x87f7f9	main.(*store).getOrder+0x99							orders-api/db.go:197
+#	0x88195a	main.(*api).getOrder+0xba							orders-api/handlers.go:154
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6						net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93						orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a					orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d						net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f							net/http/server.go:2087
+
+2 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e0fae 0x4e0f9c 0x593de5 0x59d7c5 0x66d4ab 0x4ba80e 0x5283e9 0x52f57c 0x78524b 0x785366 0x78b457 0x78b0b3 0x7894a5 0x788c7d 0x79a065 0x79f37c 0x79f389 0x87f650 0x87f1f1 0x87f42e 0x88173c 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84						runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26						internal/poll/fd_poll_runtime.go:84
+#	0x4e0fad	internal/poll.(*pollDesc).waitRead+0x2ad					internal/poll/fd_poll_runtime.go:89
+#	0x4e0f9b	internal/poll.(*FD).Read+0x29b							internal/poll/fd_unix.go:165
+#	0x593de4	net.(*netFD).Read+0x24								net/fd_posix.go:68
+#	0x59d7c4	net.(*conn).Read+0x44								net/net.go:196
+#	0x66d4aa	github.com/jackc/pgx/v5/pgconn/internal/bgreader.(*BGReader).Read+0xca		github.com/jackc/pgx/v5@v5.11.0/pgconn/internal/bgreader/bgreader.go:100
+#	0x4ba80d	io.ReadAtLeast+0x8d								io/io.go:335
+#	0x5283e8	github.com/jackc/pgx/v5/pgproto3.(*chunkReader).Next+0x288			github.com/jackc/pgx/v5@v5.11.0/pgproto3/chunkreader.go:80
+#	0x52f57b	github.com/jackc/pgx/v5/pgproto3.(*Frontend).Receive+0x3b			github.com/jackc/pgx/v5@v5.11.0/pgproto3/frontend.go:313
+#	0x78524a	github.com/jackc/pgx/v5/pgconn.(*PgConn).peekMessage+0x14a			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:643
+#	0x785365	github.com/jackc/pgx/v5/pgconn.(*PgConn).receiveMessage+0x25			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:667
+#	0x78b456	github.com/jackc/pgx/v5/pgconn.(*ResultReader).receiveMessage+0x36		github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1921
+#	0x78b0b2	github.com/jackc/pgx/v5/pgconn.(*ResultReader).readUntilRowDescription+0x72	github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1888
+#	0x7894a4	github.com/jackc/pgx/v5/pgconn.(*PgConn).execExtendedSuffix+0x1c4		github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1388
+#	0x788c7c	github.com/jackc/pgx/v5/pgconn.(*PgConn).ExecStatement+0x17c			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1328
+#	0x79a064	github.com/jackc/pgx/v5.(*Conn).Query+0x1424					github.com/jackc/pgx/v5@v5.11.0/conn.go:857
+#	0x79f37b	github.com/jackc/pgx/v5.(*Conn).QueryRow+0x3b					github.com/jackc/pgx/v5@v5.11.0/conn.go:941
+#	0x79f388	github.com/jackc/pgx/v5/pgxpool.(*Conn).QueryRow+0x48				github.com/jackc/pgx/v5@v5.11.0/pgxpool/conn.go:94
+#	0x87f64f	main.(*store).createOrder.func1+0x18f						orders-api/db.go:185
+#	0x87f1f0	main.(*store).withConn+0x1d0							orders-api/db.go:163
+#	0x87f42d	main.(*store).createOrder+0x16d							orders-api/db.go:184
+#	0x88173b	main.(*api).createOrder+0x1fb							orders-api/handlers.go:141
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6						net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93						orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a					orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d						net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f							net/http/server.go:2087
+
+2 @ 0x488e6e 0x465685 0x79e6f2 0x7a3df3 0x7a4229 0x7a1806 0x87f09d 0x87f42e 0x88173c 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x79e6f1	golang.org/x/sync/semaphore.(*Weighted).Acquire+0x331	golang.org/x/sync@v0.17.0/semaphore/semaphore.go:74
+#	0x7a3df2	github.com/jackc/puddle/v2.(*Pool[...]).acquire+0xb2	github.com/jackc/puddle/v2@v2.2.2/pool.go:360
+#	0x7a4228	github.com/jackc/puddle/v2.(*Pool[...]).Acquire+0x88	github.com/jackc/puddle/v2@v2.2.2/pool.go:347
+#	0x7a1805	github.com/jackc/pgx/v5/pgxpool.(*Pool).Acquire+0x165	github.com/jackc/pgx/v5@v5.11.0/pgxpool/pool.go:631
+#	0x87f09c	main.(*store).withConn+0x7c				orders-api/db.go:154
+#	0x87f42d	main.(*store).createOrder+0x16d				orders-api/db.go:184
+#	0x88173b	main.(*api).createOrder+0x1fb				orders-api/handlers.go:141
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6			net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93			orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a		orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d			net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f				net/http/server.go:2087
+
+2 @ 0x488e6e 0x465685 0x79e6f2 0x7a3df3 0x7a4229 0x7a1806 0x87f09d 0x87f7fa 0x881fa5 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x79e6f1	golang.org/x/sync/semaphore.(*Weighted).Acquire+0x331	golang.org/x/sync@v0.17.0/semaphore/semaphore.go:74
+#	0x7a3df2	github.com/jackc/puddle/v2.(*Pool[...]).acquire+0xb2	github.com/jackc/puddle/v2@v2.2.2/pool.go:360
+#	0x7a4228	github.com/jackc/puddle/v2.(*Pool[...]).Acquire+0x88	github.com/jackc/puddle/v2@v2.2.2/pool.go:347
+#	0x7a1805	github.com/jackc/pgx/v5/pgxpool.(*Pool).Acquire+0x165	github.com/jackc/pgx/v5@v5.11.0/pgxpool/pool.go:631
+#	0x87f09c	main.(*store).withConn+0x7c				orders-api/db.go:154
+#	0x87f7f9	main.(*store).getOrder+0x99				orders-api/db.go:197
+#	0x881fa4	main.(*api).quoteOrder+0xc4				orders-api/handlers.go:215
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6			net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93			orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a		orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d			net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f				net/http/server.go:2087
+
+1 @ 0x41f2c9 0x48b0d8 0x87e0b3 0x490661
+#	0x48b0d7	os/signal.signal_recv+0x97	runtime/sigqueue.go:152
+#	0x87e0b2	os/signal.loop+0x12		os/signal/signal_unix.go:23
+
+1 @ 0x447651 0x487c9d 0x856531 0x856365 0x8531e9 0x86d48a 0x86df1a 0x818f29 0x81acc7 0x836c0e 0x8172f0 0x490661
+#	0x856530	runtime/pprof.writeRuntimeProfile+0xb0	runtime/pprof/pprof.go:851
+#	0x856364	runtime/pprof.writeGoroutine+0x44	runtime/pprof/pprof.go:784
+#	0x8531e8	runtime/pprof.(*Profile).WriteTo+0x148	runtime/pprof/pprof.go:408
+#	0x86d489	net/http/pprof.handler.ServeHTTP+0x529	net/http/pprof/pprof.go:273
+#	0x86df19	net/http/pprof.Index+0xd9		net/http/pprof/pprof.go:397
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28	net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6	net/http/server.go:2848
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d	net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f		net/http/server.go:2087
+
+1 @ 0x488e6e 0x418e6e 0x418992 0x8321c7 0x834cf3 0x834ce0 0x7d4e0a 0x4baf03 0x514e28 0x514a25 0x5147d5 0x8855fd 0x884b7c 0x498cca 0x490661
+#	0x8321c6	net/http.(*persistConn).readLoop.func4+0xa6	net/http/transport.go:2427
+#	0x834cf2	net/http.(*bodyEOFSignal).condfn+0x1f2		net/http/transport.go:3111
+#	0x834cdf	net/http.(*bodyEOFSignal).Read+0x1df		net/http/transport.go:3087
+#	0x7d4e09	net/http.(*cancelTimerBody).Read+0x29		net/http/client.go:986
+#	0x4baf02	io.(*LimitedReader).Read+0x42			io/io.go:479
+#	0x514e27	encoding/json.(*Decoder).refill+0x187		encoding/json/stream.go:167
+#	0x514a24	encoding/json.(*Decoder).readValue+0x84		encoding/json/stream.go:142
+#	0x5147d4	encoding/json.(*Decoder).Decode+0x74		encoding/json/stream.go:65
+#	0x8855fc	main.(*pricingClient).price+0x9dc		orders-api/pricing.go:146
+#	0x884b7b	main.(*pricingClient).total.func1+0xdb		orders-api/pricing.go:75
+#	0x498cc9	sync.(*WaitGroup).Go.func1+0x49			sync/waitgroup.go:258
+
+1 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e0fae 0x4e0f9c 0x593de5 0x59d7c5 0x66d4ab 0x4ba80e 0x5283e9 0x52f57c 0x78524b 0x785366 0x78b457 0x78b0b3 0x7894a5 0x788c7d 0x79a065 0x79f2bc 0x87f95b 0x87f1f1 0x87f7fa 0x881fa5 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84						runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26						internal/poll/fd_poll_runtime.go:84
+#	0x4e0fad	internal/poll.(*pollDesc).waitRead+0x2ad					internal/poll/fd_poll_runtime.go:89
+#	0x4e0f9b	internal/poll.(*FD).Read+0x29b							internal/poll/fd_unix.go:165
+#	0x593de4	net.(*netFD).Read+0x24								net/fd_posix.go:68
+#	0x59d7c4	net.(*conn).Read+0x44								net/net.go:196
+#	0x66d4aa	github.com/jackc/pgx/v5/pgconn/internal/bgreader.(*BGReader).Read+0xca		github.com/jackc/pgx/v5@v5.11.0/pgconn/internal/bgreader/bgreader.go:100
+#	0x4ba80d	io.ReadAtLeast+0x8d								io/io.go:335
+#	0x5283e8	github.com/jackc/pgx/v5/pgproto3.(*chunkReader).Next+0x288			github.com/jackc/pgx/v5@v5.11.0/pgproto3/chunkreader.go:80
+#	0x52f57b	github.com/jackc/pgx/v5/pgproto3.(*Frontend).Receive+0x3b			github.com/jackc/pgx/v5@v5.11.0/pgproto3/frontend.go:313
+#	0x78524a	github.com/jackc/pgx/v5/pgconn.(*PgConn).peekMessage+0x14a			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:643
+#	0x785365	github.com/jackc/pgx/v5/pgconn.(*PgConn).receiveMessage+0x25			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:667
+#	0x78b456	github.com/jackc/pgx/v5/pgconn.(*ResultReader).receiveMessage+0x36		github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1921
+#	0x78b0b2	github.com/jackc/pgx/v5/pgconn.(*ResultReader).readUntilRowDescription+0x72	github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1888
+#	0x7894a4	github.com/jackc/pgx/v5/pgconn.(*PgConn).execExtendedSuffix+0x1c4		github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1388
+#	0x788c7c	github.com/jackc/pgx/v5/pgconn.(*PgConn).ExecStatement+0x17c			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1328
+#	0x79a064	github.com/jackc/pgx/v5.(*Conn).Query+0x1424					github.com/jackc/pgx/v5@v5.11.0/conn.go:857
+#	0x79f2bb	github.com/jackc/pgx/v5/pgxpool.(*Conn).Query+0x3b				github.com/jackc/pgx/v5@v5.11.0/pgxpool/conn.go:90
+#	0x87f95a	main.(*store).getOrder.func1+0xda						orders-api/db.go:198
+#	0x87f1f0	main.(*store).withConn+0x1d0							orders-api/db.go:163
+#	0x87f7f9	main.(*store).getOrder+0x99							orders-api/db.go:197
+#	0x881fa4	main.(*api).quoteOrder+0xc4							orders-api/handlers.go:215
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6						net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93						orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a					orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d						net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f							net/http/server.go:2087
+
+1 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e0fae 0x4e0f9c 0x593de5 0x59d7c5 0x66d4ab 0x4ba80e 0x5283e9 0x52f57c 0x78524b 0x785366 0x78b457 0x78b0b3 0x7894a5 0x788c7d 0x79a065 0x79f2bc 0x8805c8 0x88024e 0x87f1f1 0x87fd05 0x881d65 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84						runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26						internal/poll/fd_poll_runtime.go:84
+#	0x4e0fad	internal/poll.(*pollDesc).waitRead+0x2ad					internal/poll/fd_poll_runtime.go:89
+#	0x4e0f9b	internal/poll.(*FD).Read+0x29b							internal/poll/fd_unix.go:165
+#	0x593de4	net.(*netFD).Read+0x24								net/fd_posix.go:68
+#	0x59d7c4	net.(*conn).Read+0x44								net/net.go:196
+#	0x66d4aa	github.com/jackc/pgx/v5/pgconn/internal/bgreader.(*BGReader).Read+0xca		github.com/jackc/pgx/v5@v5.11.0/pgconn/internal/bgreader/bgreader.go:100
+#	0x4ba80d	io.ReadAtLeast+0x8d								io/io.go:335
+#	0x5283e8	github.com/jackc/pgx/v5/pgproto3.(*chunkReader).Next+0x288			github.com/jackc/pgx/v5@v5.11.0/pgproto3/chunkreader.go:80
+#	0x52f57b	github.com/jackc/pgx/v5/pgproto3.(*Frontend).Receive+0x3b			github.com/jackc/pgx/v5@v5.11.0/pgproto3/frontend.go:313
+#	0x78524a	github.com/jackc/pgx/v5/pgconn.(*PgConn).peekMessage+0x14a			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:643
+#	0x785365	github.com/jackc/pgx/v5/pgconn.(*PgConn).receiveMessage+0x25			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:667
+#	0x78b456	github.com/jackc/pgx/v5/pgconn.(*ResultReader).receiveMessage+0x36		github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1921
+#	0x78b0b2	github.com/jackc/pgx/v5/pgconn.(*ResultReader).readUntilRowDescription+0x72	github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1888
+#	0x7894a4	github.com/jackc/pgx/v5/pgconn.(*PgConn).execExtendedSuffix+0x1c4		github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1388
+#	0x788c7c	github.com/jackc/pgx/v5/pgconn.(*PgConn).ExecStatement+0x17c			github.com/jackc/pgx/v5@v5.11.0/pgconn/pgconn.go:1328
+#	0x79a064	github.com/jackc/pgx/v5.(*Conn).Query+0x1424					github.com/jackc/pgx/v5@v5.11.0/conn.go:857
+#	0x79f2bb	github.com/jackc/pgx/v5/pgxpool.(*Conn).Query+0x3b				github.com/jackc/pgx/v5@v5.11.0/pgxpool/conn.go:90
+#	0x8805c7	main.loadItems+0x107								orders-api/db.go:283
+#	0x88024d	main.(*store).listCustomerOrders.func1+0x4cd					orders-api/db.go:259
+#	0x87f1f0	main.(*store).withConn+0x1d0							orders-api/db.go:163
+#	0x87fd04	main.(*store).listCustomerOrders+0x84						orders-api/db.go:238
+#	0x881d64	main.(*api).listCustomerOrders+0x224						orders-api/handlers.go:193
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6						net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93						orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a					orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28						net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d						net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f							net/http/server.go:2087
+
+1 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e1acc 0x4e1aba 0x594d29 0x5a51db 0x5a45d0 0x81c7ac 0x81c392 0x8808ea 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84		runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26		internal/poll/fd_poll_runtime.go:84
+#	0x4e1acb	internal/poll.(*pollDesc).waitRead+0x28b	internal/poll/fd_poll_runtime.go:89
+#	0x4e1ab9	internal/poll.(*FD).Accept+0x279		internal/poll/fd_unix.go:613
+#	0x594d28	net.(*netFD).accept+0x28			net/fd_unix.go:150
+#	0x5a51da	net.(*TCPListener).accept+0x1a			net/tcpsock_posix.go:159
+#	0x5a45cf	net.(*TCPListener).Accept+0x2f			net/tcpsock.go:387
+#	0x81c7ab	net/http.(*Server).Serve+0x30b			net/http/server.go:3454
+#	0x81c391	net/http.(*Server).ListenAndServe+0x71		net/http/server.go:3380
+#	0x8808e9	main.serveDebug+0xe9				orders-api/debug.go:17
+
+1 @ 0x488e6e 0x44ab37 0x488045 0x4e04a7 0x4e1acc 0x4e1aba 0x594d29 0x5a51db 0x5a45d0 0x81c7ac 0x81c392 0x8842c5 0x490661
+#	0x488044	internal/poll.runtime_pollWait+0x84		runtime/netpoll.go:351
+#	0x4e04a6	internal/poll.(*pollDesc).wait+0x26		internal/poll/fd_poll_runtime.go:84
+#	0x4e1acb	internal/poll.(*pollDesc).waitRead+0x28b	internal/poll/fd_poll_runtime.go:89
+#	0x4e1ab9	internal/poll.(*FD).Accept+0x279		internal/poll/fd_unix.go:613
+#	0x594d28	net.(*netFD).accept+0x28			net/fd_unix.go:150
+#	0x5a51da	net.(*TCPListener).accept+0x1a			net/tcpsock_posix.go:159
+#	0x5a45cf	net.(*TCPListener).Accept+0x2f			net/tcpsock.go:387
+#	0x81c7ab	net/http.(*Server).Serve+0x30b			net/http/server.go:3454
+#	0x81c391	net/http.(*Server).ListenAndServe+0x71		net/http/server.go:3380
+#	0x8842c4	main.run.func1+0x24				orders-api/main.go:104
+
+1 @ 0x488e6e 0x465685 0x79e6f2 0x7a3df3 0x7a4229 0x7a1806 0x87f09d 0x87fd05 0x881d65 0x818f29 0x81acc7 0x880dd4 0x818f29 0x880c2b 0x818f29 0x836c0e 0x8172f0 0x490661
+#	0x79e6f1	golang.org/x/sync/semaphore.(*Weighted).Acquire+0x331	golang.org/x/sync@v0.17.0/semaphore/semaphore.go:74
+#	0x7a3df2	github.com/jackc/puddle/v2.(*Pool[...]).acquire+0xb2	github.com/jackc/puddle/v2@v2.2.2/pool.go:360
+#	0x7a4228	github.com/jackc/puddle/v2.(*Pool[...]).Acquire+0x88	github.com/jackc/puddle/v2@v2.2.2/pool.go:347
+#	0x7a1805	github.com/jackc/pgx/v5/pgxpool.(*Pool).Acquire+0x165	github.com/jackc/pgx/v5@v5.11.0/pgxpool/pool.go:631
+#	0x87f09c	main.(*store).withConn+0x7c				orders-api/db.go:154
+#	0x87fd04	main.(*store).listCustomerOrders+0x84			orders-api/db.go:238
+#	0x881d64	main.(*api).listCustomerOrders+0x224			orders-api/handlers.go:193
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x81acc6	net/http.(*ServeMux).ServeHTTP+0x1c6			net/http/server.go:2848
+#	0x880dd3	main.newHandler.withTimeout.func1+0x93			orders-api/handlers.go:78
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x880c2a	main.newHandler.limitInFlight.func2+0x16a		orders-api/handlers.go:66
+#	0x818f28	net/http.HandlerFunc.ServeHTTP+0x28			net/http/server.go:2306
+#	0x836c0d	net/http.serverHandler.ServeHTTP+0x8d			net/http/server.go:3331
+#	0x8172ef	net/http.(*conn).serve+0x68f				net/http/server.go:2087
+
+1 @ 0x488e6e 0x465685 0x7a1028 0x79f99d 0x490661
+#	0x7a1027	github.com/jackc/pgx/v5/pgxpool.(*Pool).backgroundHealthCheck+0xc7	github.com/jackc/pgx/v5@v5.11.0/pgxpool/pool.go:510
+#	0x79f99c	github.com/jackc/pgx/v5/pgxpool.NewWithConfig.func5+0x3c		github.com/jackc/pgx/v5@v5.11.0/pgxpool/pool.go:337
+
+1 @ 0x488e6e 0x465685 0x87dafc 0x490661
+#	0x87dafb	os/signal.NotifyContext.func1+0x7b	os/signal/signal.go:292
+
+1 @ 0x488e6e 0x465685 0x883cb4 0x883307 0x451f55 0x490661
+#	0x883cb3	main.run+0x593		orders-api/main.go:107
+#	0x883306	main.main+0x186		orders-api/main.go:32
+#	0x451f54	runtime.main+0x2d4	runtime/proc.go:290
+
+1 @ 0x490661
+
+1 @ 0x4ac48b 0x4ac5e5 0x829c37 0x8322d4 0x831f76 0x490661
+#	0x4ac48a	time.when+0x4a					time/sleep.go:52
+#	0x4ac5e4	time.(*Timer).Reset+0x24			time/sleep.go:175
+#	0x829c36	net/http.(*Transport).tryPutIdleConn+0x7b6	net/http/transport.go:1162
+#	0x8322d3	net/http.(*persistConn).readLoop.func2+0x33	net/http/transport.go:2303
+#	0x831f75	net/http.(*persistConn).readLoop+0xc75		net/http/transport.go:2461
+

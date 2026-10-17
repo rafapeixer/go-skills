@@ -1,5 +1,8 @@
 | Load | Implementation | Instance | Fits in memory | Instances | CPU per instance | US$/month us-east-1 | US$/month sa-east-1 |
 |---|---|---|---|---|---|---|---|
+| 1000 req/s | Go (tuned) | t4g.micro | yes | 2 | 0.14 cores | 12.26 | 19.56 |
+| 1000 req/s | Go (tuned) | t4g.small | yes | 2 | 0.14 cores | 24.53 | 39.13 |
+| 1000 req/s | Go (tuned) | t4g.medium | yes | 2 | 0.14 cores | 49.06 | 78.26 |
 | 1000 req/s | Go (with go-skills) | t4g.micro | yes | 2 | 0.15 cores | 12.26 | 19.56 |
 | 1000 req/s | Go (with go-skills) | t4g.small | yes | 2 | 0.15 cores | 24.53 | 39.13 |
 | 1000 req/s | Go (with go-skills) | t4g.medium | yes | 2 | 0.15 cores | 49.06 | 78.26 |
@@ -9,6 +12,9 @@
 | 1000 req/s | Python 3.13 + FastAPI | t4g.micro | yes | 2 | 0.46 cores | 27.56 | 34.86 |
 | 1000 req/s | Python 3.13 + FastAPI | t4g.small | yes | 2 | 0.46 cores | 28.15 | 42.75 |
 | 1000 req/s | Python 3.13 + FastAPI | t4g.medium | yes | 2 | 0.46 cores | 52.68 | 81.88 |
+| 5000 req/s | Go (tuned) | t4g.micro | yes | 2 | 0.69 cores | 41.03 | 48.33 |
+| 5000 req/s | Go (tuned) | t4g.small | yes | 2 | 0.69 cores | 41.61 | 56.21 |
+| 5000 req/s | Go (tuned) | t4g.medium | yes | 2 | 0.69 cores | 66.14 | 95.34 |
 | 5000 req/s | Go (with go-skills) | t4g.micro | yes | 2 | 0.76 cores | 45.11 | 52.41 |
 | 5000 req/s | Go (with go-skills) | t4g.small | yes | 2 | 0.76 cores | 45.70 | 60.30 |
 | 5000 req/s | Go (with go-skills) | t4g.medium | yes | 2 | 0.76 cores | 70.23 | 99.43 |
@@ -18,6 +24,9 @@
 | 5000 req/s | Python 3.13 + FastAPI | t4g.micro | yes | 6 | 0.77 cores | 136.66 | 158.56 |
 | 5000 req/s | Python 3.13 + FastAPI | t4g.small | yes | 6 | 0.77 cores | 138.41 | 182.21 |
 | 5000 req/s | Python 3.13 + FastAPI | t4g.medium | yes | 6 | 0.77 cores | 211.99 | 299.59 |
+| 20000 req/s | Go (tuned) | t4g.micro | yes | 3 | 1.85 cores | 162.64 | 173.59 |
+| 20000 req/s | Go (tuned) | t4g.small | yes | 3 | 1.85 cores | 163.52 | 185.42 |
+| 20000 req/s | Go (tuned) | t4g.medium | yes | 3 | 1.85 cores | 200.31 | 244.11 |
 | 20000 req/s | Go (with go-skills) | t4g.micro | yes | 6 | 1.02 cores | 179.87 | 201.77 |
 | 20000 req/s | Go (with go-skills) | t4g.small | yes | 6 | 1.02 cores | 181.62 | 225.42 |
 | 20000 req/s | Go (with go-skills) | t4g.medium | yes | 6 | 1.02 cores | 255.21 | 342.81 |

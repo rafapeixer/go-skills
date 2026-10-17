@@ -1,6 +1,6 @@
 ---
 name: overload-protection
-description: Use when writing or reviewing Go code that decides what a service does above capacity, adds retries to an outbound call, wraps a dependency, or adds a concurrency or rate limit to an HTTP server. Covers capping in-flight requests with an AIMD or fixed limiter, shedding with an immediate 503 and Retry-After instead of queueing, retrying only idempotent operations with at most 3 attempts and full-jitter backoff, retrying at one layer, a per-client retry budget of about 10%, a fail-fast bulkhead per dependency, and ctx.Err checks before expensive work, all with the standard library.
+description: Use when writing or reviewing Go code that decides what a service does above capacity, adds retries to an outbound call, wraps a dependency, or adds a concurrency or rate limit to an HTTP server. Covers capping in-flight requests with an AIMD or fixed limiter, shedding with an immediate 503 and Retry-After instead of queueing, retrying only idempotent operations with at most 3 attempts and full-jitter backoff, retrying at one layer, a per-client retry budget of about 10%, a fail-fast bulkhead per dependency sized by Little's law, and ctx.Err checks before expensive work, all with the standard library.
 metadata:
   verified: 2026-10-17
 ---
@@ -18,7 +18,7 @@ Every service eventually receives more work than it can finish in time: a traffi
 3. Make at most 3 attempts, wait a full-jitter backoff `rand.N(min(maxDelay, baseDelay<<attempt))` between them, and give up when the context's remaining time is shorter than the next wait.
 4. Retry at exactly one layer, the call site closest to the dependency that failed, and return every failure above it unretried.
 5. Give each outbound client a retry budget, a token bucket that allows retries for at most about 10% of its requests, and stop retrying when it is empty.
-6. Put a bulkhead in front of each dependency, a semaphore sized below that dependency's capacity whose acquire fails fast with `503` instead of waiting.
+6. Put a bulkhead in front of each dependency, a semaphore sized by Little's law (expected call rate × call latency, plus headroom, and below that dependency's capacity) with the arithmetic written in a comment next to the constant, whose acquire never waits and fails fast with `503`.
 7. Check `ctx.Err()` before expensive work and pass the request context to every call, so shed and abandoned requests stop using resources.
 
 ## Why
@@ -35,7 +35,7 @@ A fixed limit is wrong after the next deploy, instance size change or dependency
 
 **Rule 5.** Three attempts per request still triple the load when everything fails, which is when the dependency can least afford it. The SRE book's per-client retry budget retries a request only while the ratio of retries to requests is below 10%, which it reports cuts the growth from "just below 3X" to "just 1.1x in the general case". AWS's article implements the same idea locally with a token bucket. The good example deposits 0.1 token per call and spends 1 per retry, so retries are capped at about 10% of traffic however long the outage lasts, while a healthy client still retries an occasional blip.
 
-**Rule 6.** One process-wide limit is not enough when there are several dependencies. If search slows to 10 s, its calls hold every in-flight slot, and checkout, which never touches search, starts getting `503`s too. A bulkhead per dependency (a buffered channel used as a semaphore with a `select` and `default`) caps how much of the process one dependency can hold, and failing fast keeps the caller's goroutine free. Size it below what the dependency can serve concurrently. For Postgres the `pgxpool` itself is that bulkhead; see `postgres-pgx-pool` for its short acquire timeout and 503 mapping instead of adding a second semaphore. For the same idea partitioned per tenant at the infrastructure level, see AWS's whitepaper on cell-based architecture and the Builders' Library article on shuffle sharding; both are out of scope here.
+**Rule 6.** One process-wide limit is not enough when there are several dependencies. If search slows to 10 s, its calls hold every in-flight slot, and checkout, which never touches search, starts getting `503`s too. A bulkhead per dependency (a buffered channel used as a semaphore with a `select` and `default`) caps how much of the process one dependency can hold, and failing fast keeps the caller's goroutine free. Size it by Little's law: the calls in flight on average are the call rate times the call latency, so a replica that makes 2,700 calls/s at 25 ms holds about 67 in flight; add headroom for bursts and latency jitter (two to three times), keep it below what the dependency can serve concurrently, and write that arithmetic next to the constant so the next change in traffic or latency shows which number to redo. A guessed size fails exactly when traffic grows. Acquire with `select` and `default`, never with a timer: a bulkhead that waits 100 ms for a slot is a hidden queue that adds up to 100 ms to every call once it is full and still ends in a `503`. In the orders-api benchmark (one 2 vCPU / 1 GiB replica, three runs) a pricing bulkhead guessed at 64 slots with a 100 ms wait was the only cause of the `503`s at 6,000 req/s: 1.3% errors, and quote p50 rose from 30 ms to 123 ms as every call queued on the semaphore. Sized to 256 from the arithmetic above and acquired without waiting, it never filled, errors at 6,000 req/s were 0%, and together with one query per read (`sql-queries-and-transactions` rule 4) capacity within the SLO went from 5,000 to 10,000 req/s. For Postgres the `pgxpool` itself is that bulkhead; see `postgres-pgx-pool` for its short acquire timeout and 503 mapping instead of adding a second semaphore. For the same idea partitioned per tenant at the infrastructure level, see AWS's whitepaper on cell-based architecture and the Builders' Library article on shuffle sharding; both are out of scope here.
 
 **Rule 7.** A shed request costs nothing only if nothing downstream keeps working on it. The SRE book recommends propagating deadlines, checking the remaining time before each stage of a request, and propagating cancellation so downstream servers stop doomed work. In Go that is `ctx.Err()` before an expensive step and the request `ctx` in every call; how to set the edge deadline and derive outbound timeouts is covered in `context-and-deadlines`, and is not repeated here.
 
@@ -60,7 +60,16 @@ func shed(l *limiter, retryAfter time.Duration, next http.Handler) http.Handler 
 }
 ```
 
-The middleware never waits for a slot, and the AIMD limiter learns from each response's latency and status. Retries live in one helper, called once, at the call site of the dependency:
+The middleware never waits for a slot, and the AIMD limiter learns from each response's latency and status. The bulkhead's size carries its arithmetic:
+
+```go
+// pricingSlots sizes the pricing bulkhead by Little's law: about 400 calls/s
+// at 25 ms each is 10 calls in flight on average; 20 doubles that for bursts
+// and stays below the 50 concurrent calls the pricing service can serve.
+const pricingSlots = 20
+```
+
+Retries live in one helper, called once, at the call site of the dependency:
 
 ```go
 	for attempt := range maxAttempts {
@@ -129,7 +138,7 @@ When reviewing code under this skill, confirm:
 - [ ] Retry waits select on `ctx.Done()`, and no retry starts when the remaining deadline is shorter than the wait.
 - [ ] Each outbound call is retried at exactly one layer; there is no retry loop in the handler above it or in a retrying transport below it.
 - [ ] Each outbound client has a retry budget (about 10% of its requests) that stops retries when it is spent.
-- [ ] Each dependency sits behind its own bulkhead (or its own bounded pool) that fails fast instead of waiting.
+- [ ] Each dependency sits behind its own bulkhead (or its own bounded pool) whose size has its Little's-law arithmetic (call rate × latency, plus headroom) in a comment, and whose acquire fails at once, with no timed wait.
 - [ ] Handlers check `ctx.Err()` before expensive work and pass the request context to every downstream call.
 
 ## When not to apply

@@ -1,6 +1,6 @@
 ---
 name: sql-queries-and-transactions
-description: Use when writing or reviewing Go code that runs Postgres queries or transactions with pgx v5, choosing between sqlc, an ORM or hand-written Scan, building a query with a dynamic ORDER BY or filter, paginating a list, loading related rows for a page, retrying a transaction, or calling another service while a transaction is open. Covers sqlc with sql_package pgx/v5, $n parameters and allow-listed identifiers, keyset pagination instead of OFFSET, = ANY($1) and batches instead of N+1, a transaction helper that reruns the whole transaction on 40001/40P01 with jitter, the outbox instead of network calls inside a transaction, and per-role statement_timeout and idle_in_transaction_session_timeout.
+description: Use when writing or reviewing Go code that runs Postgres queries or transactions with pgx v5, choosing between sqlc, an ORM or hand-written Scan, building a query with a dynamic ORDER BY or filter, paginating a list, loading related rows for a page, retrying a transaction, or calling another service while a transaction is open. Covers sqlc with sql_package pgx/v5, $n parameters and allow-listed identifiers, keyset pagination instead of OFFSET, LEFT JOIN LATERAL with array_agg for small child sets and = ANY($1) or batches for large ones instead of N+1, a transaction helper that reruns the whole transaction on 40001/40P01 with jitter, the outbox instead of network calls inside a transaction, and per-role statement_timeout and idle_in_transaction_session_timeout.
 metadata:
   verified: 2026-10-17
 ---
@@ -16,7 +16,7 @@ Once the pool exists (see `postgres-pgx-pool`), every feature adds queries and t
 1. Write queries in `.sql` files and generate their Go code with sqlc (`sql_package: "pgx/v5"`), and for the rare query sqlc cannot express, scan with `pgx.CollectRows` and `pgx.RowToStructByName`, never with an ORM or a hand-written `Scan` loop.
 2. Pass every value as a `$n` parameter, and when a column name or sort direction must vary, map the request's key through an allow-list to SQL text written in code, never `fmt.Sprintf` input into SQL.
 3. Paginate with a keyset (`WHERE (created_at, id) < ($3, $4) ORDER BY created_at DESC, id DESC LIMIT $2`) and an opaque cursor, never with `OFFSET`.
-4. Load related rows for a whole page in one query with `= ANY($1::bigint[])`, or send different queries together in one `pgx.Batch` (sqlc `:batchmany`), never one query per row.
+4. Load related rows for a whole page without one query per row: when each parent has a small, bounded set of children, return them with the parents in the same statement through `LEFT JOIN LATERAL (SELECT array_agg(...) ...)` joined to a subquery that applies the page's `LIMIT`, and only when the child set is large or unbounded use a second query with `= ANY($1::bigint[])` or one `pgx.Batch` (sqlc `:batchmany`).
 5. Run every transaction through one helper that takes `func(pgx.Tx) error` and reruns the whole function, with capped and jittered backoff, only on SQLSTATE `40001` or `40P01`.
 6. Make no network call (HTTP, queue publish, email) inside a transaction: write the side effect to an outbox table, or enqueue with River's `InsertTx`, in the same transaction and deliver it after commit.
 7. Set `statement_timeout` and `idle_in_transaction_session_timeout` (and `transaction_timeout` on PostgreSQL 17+) on the service's role with `ALTER ROLE ... SET`, as the server-side backstop for the request's context deadline.
@@ -30,6 +30,8 @@ Once the pool exists (see `postgres-pgx-pool`), every feature adds queries and t
 **Rule 3.** `OFFSET n` makes Postgres produce and discard `n` rows before the page, so cost grows linearly with depth and a crawler walking to the end turns every request into a near full scan. Rows inserted or deleted between two requests shift the window, so users see duplicates or miss rows. A keyset page starts where the last one ended: with an index on `(customer_id, created_at, id)` every page is an index range scan of `LIMIT` rows. Include a unique column (`id`) in the key, because `created_at` alone has ties and a tie at the page boundary drops rows. Encode the position as an opaque cursor so clients cannot depend on its shape and you can change it later; it is not a security boundary, so it still goes in as `$n` parameters. The cost: no "jump to page 37" and no exact page count. Most APIs and infinite-scroll UIs need neither.
 
 **Rule 4.** Each query is a network round trip plus a pool checkout. A list of 100 customers that loads orders per customer is 101 round trips; at 1 ms each, that is 100 ms of pure latency before any query runs slowly, and it holds a connection the whole time. `WHERE customer_id = ANY($1::bigint[])` sends the IDs as one array parameter and returns everything in one round trip; group the rows in Go. sqlc generates a method that takes `[]int64` for this. When the queries differ (or each must return its own result set), queue them in a `pgx.Batch` and send it once with `SendBatch`, or annotate the query `:batchmany` and let sqlc generate the batch.
+
+A second `= ANY` query is still a second round trip, a second set of protocol messages and a second wait on the connection for every request. When the children per parent are few and bounded (the items of an order, the tags of a post), return them in the same statement: `LEFT JOIN LATERAL (SELECT array_agg(sku ORDER BY sku), array_agg(qty ORDER BY sku) FROM order_items WHERE order_id = o.id)` gives each parent its children as parallel arrays that pgx decodes in binary, with no JSON and no second query, and `coalesce(..., '{}')` keeps parents with no children. Put the keyset `WHERE`, `ORDER BY` and `LIMIT` in a subquery and join the LATERAL to that subquery, so the child lookup runs once per row of the page (one index scan each) and not for parent rows the limit throws away. In the orders-api benchmark on one 2 vCPU / 1 GiB replica, replacing the `= ANY` items query with this shape was the change that moved CPU: 9% less CPU per request across three verification runs (16% less, and about 20% less Postgres CPU, in the run that measured it alone), and together with a correctly sized bulkhead (`overload-protection` rule 6) it doubled the capacity within the SLO from 5,000 to 10,000 req/s. Keep `= ANY` (or a batch) when the child set is large or unbounded, such as a customer's orders: one array per parent then grows without limit and must be paged on its own.
 
 **Rule 5.** Under `REPEATABLE READ` and `SERIALIZABLE` Postgres aborts transactions with `40001 serialization_failure`, and at any isolation level it breaks deadlocks with `40P01 deadlock_detected`. After either error the transaction is aborted: every further statement fails with `25P02`, so retrying the one failed statement is useless. The Postgres docs say to retry the complete transaction, including the logic that decided what to write, which means the retry unit must be a function, not a statement. One helper built on `pgx.BeginTxFunc` gives every caller the same behavior: it commits on `nil`, rolls back on error, and reruns `fn` on `40001`/`40P01`, which also covers a serialization failure reported at `COMMIT`. Classify with `errors.AsType[*pgconn.PgError](err)` on `Code`, never by matching the message, and wrap inside `fn` with `%w` so the code survives. Retry nothing else: `23505 unique_violation` is usually a real conflict, and `57014 query_canceled` from `statement_timeout` repeats the same slow query. Cap attempts (five is plenty), add full jitter so the two colliding transactions do not collide again, and stop when the context ends. `BeginTxFunc`'s context bounds only `BEGIN`, `COMMIT` and `ROLLBACK`, so pass the request `ctx` to every query inside `fn` (see `context-and-deadlines`).
 
@@ -69,7 +71,22 @@ func retryable(err error) bool {
 		where + " ORDER BY " + s.order + " LIMIT $2", nil
 ```
 
-`InTx` reruns the whole function, and `retryTx` takes the attempt as a plain function, so the tests drive it with a fake that returns `*pgconn.PgError` codes, inside `synctest.Test` so the backoff is instant. The only concatenated text in `listOrdersSQL` comes from the `sorts` allow-list in code; values stay `$n`. `db.go` stands in for what sqlc generates from `query.sql` and `sqlc.yaml` (it is hand-written so the example builds without sqlc), `PlaceOrder` writes the order and its outbox row in one transaction, `OrdersFor` replaces N+1 with `= ANY`, and `roles.sql` sets the timeouts. The tests need no database.
+`InTx` reruns the whole function, and `retryTx` takes the attempt as a plain function, so the tests drive it with a fake that returns `*pgconn.PgError` codes, inside `synctest.Test` so the backoff is instant. The only concatenated text in `listOrdersSQL` comes from the `sorts` allow-list in code; values stay `$n`. `db.go` stands in for what sqlc generates from `query.sql` and `sqlc.yaml` (it is hand-written so the example builds without sqlc), `PlaceOrder` writes the order and its outbox row in one transaction, `OrdersFor` replaces N+1 with `= ANY` because a customer's orders are unbounded, and `roles.sql` sets the timeouts. Order items are few per order, so `OrderPageWithItems` in `query.sql` (and its stand-in in `items.go`) returns them with the page:
+
+```sql
+FROM (
+    SELECT id, customer_id, total_cents, created_at FROM orders
+    WHERE customer_id = $1
+    ORDER BY created_at DESC, id DESC
+    LIMIT $2
+) o
+LEFT JOIN LATERAL (
+    SELECT array_agg(sku ORDER BY sku) AS skus, array_agg(qty ORDER BY sku) AS qtys
+    FROM order_items WHERE order_id = o.id
+) i ON true
+```
+
+The tests need no database: they check the SQL shape, including that the `LIMIT` sits inside the subquery before the `LEFT JOIN LATERAL` and that `items.go` matches `query.sql`.
 
 ## Bad example
 
@@ -110,7 +127,7 @@ When reviewing code under this skill, confirm:
 - [ ] Static queries live in `.sql` files generated by sqlc with `sql_package: "pgx/v5"`, the generated code is committed and unedited, and no ORM or hand-written `Scan` loop is added.
 - [ ] Every value reaches Postgres as a `$n` parameter, and every dynamic identifier or sort direction comes from an allow-list of constants in code.
 - [ ] No list endpoint uses `OFFSET`; pages use a keyset on an indexed key that ends in a unique column, behind an opaque cursor.
-- [ ] No loop runs a query per item; related rows load with `= ANY($1::type[])` or one `pgx.Batch`/`:batchmany`.
+- [ ] No loop runs a query per item; small, bounded child rows come back with their parents in one statement (`LEFT JOIN LATERAL` with `array_agg`, the `LIMIT` in a subquery before the join), and only large or unbounded ones load with a second `= ANY($1::type[])` query or one `pgx.Batch`/`:batchmany`.
 - [ ] Every transaction goes through the one helper, which reruns the whole function only on `40001`/`40P01`, with capped attempts, jitter and a stop on context end.
 - [ ] Errors are classified with `errors.AsType[*pgconn.PgError]` on `Code`, never by message text, and code inside a transaction wraps with `%w`.
 - [ ] No HTTP call, queue publish or email happens between `BEGIN` and `COMMIT`; side effects are outbox rows or `InsertTx` jobs in the same transaction.

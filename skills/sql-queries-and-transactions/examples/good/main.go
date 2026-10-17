@@ -37,7 +37,8 @@ func PlaceOrder(ctx context.Context, pool *pgxpool.Pool, customerID, totalCents 
 }
 
 // OrdersFor loads the orders of every customer on a page in one round trip,
-// instead of one query per customer.
+// instead of one query per customer. A customer's orders are unbounded, so
+// they come from a second = ANY query rather than an array per customer.
 func OrdersFor(ctx context.Context, q *Queries, customerIDs []int64) (map[int64][]Order, error) {
 	orders, err := q.OrdersByCustomers(ctx, customerIDs)
 	if err != nil {
@@ -76,5 +77,11 @@ func main() {
 		slog.Error("load orders", "err", err)
 		return
 	}
-	slog.Info("orders", "placed", id, "page", len(page), "next", next, "customers", len(byCustomer))
+	// Items are few per order, so they come back with the page in one statement.
+	withItems, err := New(pool).OrderPageWithItems(ctx, OrderPageWithItemsParams{CustomerID: 7, Limit: 20})
+	if err != nil {
+		slog.Error("load orders with items", "err", err)
+		return
+	}
+	slog.Info("orders", "placed", id, "page", len(page), "next", next, "customers", len(byCustomer), "with_items", len(withItems))
 }

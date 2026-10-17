@@ -1,6 +1,6 @@
 ---
 name: outbound-http-client
-description: Use when writing or reviewing Go code that calls another service over HTTP with net/http: creating an http.Client or http.Transport, sending requests with Do or Get, reading or closing response bodies, wrapping a third-party API, or fetching a URL that a user supplied. Covers one reused client per upstream, a cloned DefaultTransport with MaxIdleConnsPerHost raised, Client.Timeout plus request context, draining and closing bodies for connection reuse, bounded body reads, transparent gzip, and allow-listing URLs and redirects against SSRF.
+description: Use when writing or reviewing Go code that calls another service over HTTP with net/http: creating an http.Client or http.Transport, sending requests with Do or Get, reading or closing response bodies, wrapping a third-party API, or fetching a URL that a user supplied. Covers one reused client per upstream, a cloned DefaultTransport with MaxIdleConnsPerHost raised, Client.Timeout plus request context, draining and closing bodies for connection reuse, bounded body reads, transparent gzip, allow-listing URLs and redirects against SSRF, and a per-call timeout plus a circuit breaker with one half-open probe for an upstream that turns slow.
 metadata:
   verified: 2026-10-17
 ---
@@ -9,7 +9,7 @@ metadata:
 
 ## The decision
 
-Every Go service that calls another service decides how its `http.Client` is built, how long a call may take, and what it does with the response body. The standard library makes the dangerous choices the short ones: `http.Get` uses `http.DefaultClient`, which has no timeout; `&http.Client{}` inside a function looks harmless and throws away the connection pool on every call; `defer resp.Body.Close()` looks complete but returns the connection to the pool only if the body was read to the end; `io.ReadAll(resp.Body)` trusts the upstream to send a sane amount; and a URL taken from a request is followed, redirects included, to wherever it points. None of this fails in a unit test against a fast local server. It fails under load (ports in `TIME_WAIT`, handshake CPU), on a slow upstream (goroutines that never return), or in a security review (a request to the cloud metadata endpoint). This skill fixes how the client for one upstream is built and how each call reads its response. How long each call may take within a request is `context-and-deadlines`; retries, backoff and per-dependency concurrency limits are `overload-protection`.
+Every Go service that calls another service decides how its `http.Client` is built, how long a call may take, and what it does with the response body. The standard library makes the dangerous choices the short ones: `http.Get` uses `http.DefaultClient`, which has no timeout; `&http.Client{}` inside a function looks harmless and throws away the connection pool on every call; `defer resp.Body.Close()` looks complete but returns the connection to the pool only if the body was read to the end; `io.ReadAll(resp.Body)` trusts the upstream to send a sane amount; and a URL taken from a request is followed, redirects included, to wherever it points. None of this fails in a unit test against a fast local server. It fails under load (ports in `TIME_WAIT`, handshake CPU), on a slow upstream (goroutines that never return), or in a security review (a request to the cloud metadata endpoint). This skill fixes how the client for one upstream is built, how each call reads its response, and how a call stops waiting on an upstream that turns slow. How long each call may take within a request is `context-and-deadlines`; retries, backoff and per-dependency concurrency limits are `overload-protection`.
 
 ## The rule
 
@@ -20,6 +20,7 @@ Every Go service that calls another service decides how its `http.Client` is bui
 5. Read response bodies through `io.LimitReader` with a limit one byte above the largest legitimate response, and fail when it is exceeded.
 6. Do not set `Accept-Encoding` yourself, because that turns off the Transport's transparent gzip decoding.
 7. Check every URL that is not a compile-time constant against an allow-list of scheme and host before dialing, and set `CheckRedirect` so redirects pass the same check.
+8. Give each call its own timeout near the upstream's normal latency, not the whole request budget, and wrap it in a circuit breaker per upstream that opens after a few consecutive failures and admits a single half-open probe, so a slow upstream fails fast instead of being waited for.
 
 ## Why
 
@@ -36,6 +37,8 @@ Every Go service that calls another service decides how its `http.Client` is bui
 **Rule 6.** The `DisableCompression` docs explain the mechanism: the Transport adds `Accept-Encoding: gzip` only when the request has none, and decodes the response transparently only when it asked for gzip itself. "If the user explicitly requested gzip it is not automatically uncompressed." Setting the header by hand, usually copied from a curl command or "to save bandwidth", gets you the compressed bytes in `resp.Body`, which decode as garbage or fail as invalid JSON, and only when the upstream actually compresses, so tests against an uncompressed fake pass. Leave the header alone and you already get gzip.
 
 **Rule 7.** A URL from a request body, a webhook registration or an upstream's "next page" link can point at `http://169.254.169.254/` (cloud credentials), `localhost:6060/debug/pprof/` or any internal service, and the server fetches it with its own network position: server-side request forgery. gosec flags a request URL built from tainted input (G107, and G704 for the taint-analysis SSRF check). Resolve the reference against the configured base URL and compare scheme and host with an allow-list before the request is built. Redirects need the same check: the default `CheckRedirect` follows up to 10 redirects to any host, so an allowed host that redirects (or is made to redirect) walks the client anywhere. `CheckRedirect` runs before each redirect is followed; return an error to stop it, or `http.ErrUseLastResponse` to hand the 3xx response back to the caller. The Client already drops `Authorization`, `WWW-Authenticate` and `Cookie` on a redirect to a domain that is neither the original nor a subdomain of it; a `CheckRedirect` that copies them back defeats that, which is what gosec G119 reports.
+
+**Rule 8.** `Client.Timeout` and the request context bound a call by the request's budget, which is sized for the whole request, not for one dependency. When an upstream that usually answers in 20 ms slows to 1.5 s, every call waits the full 1.5 s inside a 2.5 s budget: goroutines, connections and bulkhead slots stay held, the caller's latency becomes the upstream's, and the request often fails anyway. A per-call timeout near the upstream's normal latency (with margin for its own tail, for example 1 s for a 20 ms service) turns that call into a fast failure. A circuit breaker then stops paying even that: after a few consecutive failures (timeouts, transport errors, 5xx) it opens and every call returns `ErrOpen` in microseconds without touching the network; after the open period it admits one probe and re-arms the open period at the same moment, so the other callers keep failing fast while the probe runs and a probe whose result is never reported cannot wedge the breaker; a successful probe closes it. Count only what says something about the upstream: a 404 is an answer, so return `nil` from the call for it, and a call the caller cancelled is not counted at all. Map `ErrOpen` to `503` with `Retry-After` and never retry it (see `overload-protection`). In the orders-api benchmark (one 2 vCPU / 1 GiB replica, three runs, 400 req/s with the pricing service at 1.5 s), a 1 s per-call timeout and a breaker that opens after 5 failures for 2 s took the overall p99 from 1,594 ms to 3 ms: quotes still failed, because the dependency was slow for the whole run, but almost all of them at once, and the other endpoints kept their latency. The breaker is about 50 lines of `sync.Mutex` and `time`, so the standard library is enough.
 
 ## Good example
 
@@ -71,6 +74,25 @@ See [`examples/good/`](examples/good/).
 ```
 
 `upstream.Client` is built once in `main` and wraps the only `*http.Client` for that upstream. `Get` resolves the reference against the base URL, checks it against the same `allow` method the redirect policy uses, sends it on the caller's context and reads the body through a limit. The tests count connections with `httptest.Server.Config.ConnState` (50 sequential calls, half of them error responses, use one connection), and check that an oversized body returns `ErrTooLarge`, a slow upstream returns a timeout `*url.Error` after about 50ms, a redirect to another host and an absolute URL to the metadata endpoint are both refused, and a gzip response is decoded without any header set by hand.
+
+`Breaker` wraps calls to the same upstream; `Do` gives each call its own timeout and counts only results the upstream is responsible for:
+
+```go
+func (b *Breaker) Do(ctx context.Context, call func(context.Context) error) error {
+	if !b.allow() {
+		return ErrOpen
+	}
+	callCtx, cancel := context.WithTimeout(ctx, b.timeout)
+	defer cancel()
+	err := call(callCtx)
+	if ctx.Err() == nil {
+		b.record(err == nil)
+	}
+	return err
+}
+```
+
+Its tests run inside `synctest.Test`: a slow upstream costs exactly the 50ms call timeout until the breaker opens after 3 failures, the next call returns `ErrOpen` with zero elapsed fake time and without reaching the upstream, a failed probe keeps it open, a successful probe after the open period closes it, and a cancelled caller is not counted.
 
 ## Bad example
 
@@ -112,6 +134,7 @@ When reviewing code under this skill, confirm:
 - [ ] No code sets `Accept-Encoding` on an outbound request, and nothing decodes gzip by hand that the Transport would have decoded.
 - [ ] Every URL that is not a constant is checked against an allow-list of scheme and host before the request is built, and `CheckRedirect` applies the same check with a small redirect cap.
 - [ ] No `CheckRedirect` copies `Authorization`, `Cookie` or other credentials onto a redirected request.
+- [ ] Each call to an upstream runs under its own timeout near that upstream's normal latency, inside a per-upstream circuit breaker that opens after consecutive failures, admits one half-open probe, and does not count 404s or caller cancellations.
 
 ## When not to apply
 
@@ -120,4 +143,5 @@ When reviewing code under this skill, confirm:
 - **One-off CLIs and scripts.** A command that makes three calls and exits gains nothing from pool sizing. Still use a Client with `Timeout` instead of `http.Get`, and still close bodies; skip `MaxIdleConnsPerHost`.
 - **Generated or vendor SDK clients.** If the SDK accepts an `*http.Client` or `http.RoundTripper`, pass it the one built here; if it builds its own, configure it through its options and check that it reuses it, rather than wrapping each call in a new SDK client.
 - **Intentional raw-body passthrough.** A proxy that forwards a compressed body untouched may set `DisableCompression: true` on its Transport (or forward the client's own `Accept-Encoding`) so it receives the bytes as sent; it must then not parse the body. Proxies are better built with `httputil.ReverseProxy` and `Rewrite`, see `http-server`.
+- **Rare calls and batch work.** A breaker learns from a stream of calls; an upstream called a few times a minute, or from a job that can wait and retry later, needs the per-call timeout but not a breaker.
 - **Tests.** `httptest.Server.Client()` returns a client already configured for that test server; use it for tests of handlers, and use the production constructor, pointed at `httptest.Server.URL`, for tests of the client itself so the timeout, limits and redirect policy are exercised.

@@ -15,6 +15,11 @@ import (
 
 const retryAfter = time.Second
 
+// pricingSlots sizes the pricing bulkhead by Little's law: about 400 calls/s
+// at 25 ms each is 10 calls in flight on average; 20 doubles that for bursts
+// and stays below the 50 concurrent calls the pricing service can serve.
+const pricingSlots = 20
+
 // pricing is the outbound dependency; a real one wraps an *http.Client and
 // returns errTransient for 502, 503, 504 and connection errors.
 type pricing func(ctx context.Context, sku string) (int, error)
@@ -61,7 +66,7 @@ func main() {
 		price: func(ctx context.Context, sku string) (int, error) {
 			return 100 * len(sku), nil
 		},
-		pool:    newBulkhead(20),
+		pool:    newBulkhead(pricingSlots),
 		budget:  newBudget(0.1, 10),
 		limiter: newLimiter(50, 10, 500, 250*time.Millisecond),
 	}

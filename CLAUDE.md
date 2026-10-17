@@ -79,6 +79,16 @@ Everything that can be checked is checked by a script, so a wrong change fails C
 
 When you add a rule a script could enforce, add the check in the same PR.
 
+### Evals
+
+`evals/<case>/` holds `claude plugin eval` cases: a realistic prompt (`prompt.md`) and regex graders on the file the agent writes. Each case runs with and without the plugin, so the score delta shows whether the skills change what agents produce. Runs cost model calls; cap them:
+
+```bash
+claude plugin eval . --runs 2 --allow-tools Write --trust-plugin --no-publish --max-cost-usd 15
+```
+
+A new skill should come with at least one case whose graders fail on the mistake the skill prevents. `evals/results/` is gitignored.
+
 The catalog is released in waves. Each skill is added in its own PR.
 
 - **v1:** `project-layout`, `errors`, `context-and-deadlines`, `concurrency`, `http-server`, `postgres-pgx-pool`, `secure-defaults`, `testing`.

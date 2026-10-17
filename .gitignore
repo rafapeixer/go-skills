@@ -15,3 +15,6 @@ go.work.sum
 Thumbs.db
 .idea/
 .vscode/
+
+# Eval run output
+evals/results/

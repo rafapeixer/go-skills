@@ -100,6 +100,23 @@ One skill per PR; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
+## Does it change what agents write?
+
+Measured with `claude plugin eval` ([`evals/`](evals/)): the same prompt runs with and without the plugin, and regex graders check the file the agent writes. Two runs per arm, October 2026.
+
+| Task | Without plugin | With plugin | What changed |
+|---|---|---|---|
+| Fetch 10,000 prices concurrently, stop on first error | 0.33 | **1.00** | Bounded `errgroup` with `SetLimit` instead of one goroutine per ID |
+| Create the pgx pool for 8 replicas and a 200-connection budget | 0.50 | **1.00** | `MaxConns` derived from the budget, lifetime jitter, `pgxpool` every time |
+| Kubernetes Deployment for a Go API | 0.67 | **1.00** | CPU limit set, so container-aware `GOMAXPROCS` works |
+| Production HTTP server | 1.00 | 1.00 | Model already sets timeouts and shutdown |
+| Map errors to HTTP status | 1.00 | 1.00 | Model already uses sentinels and `errors.Is` |
+| Password reset token | 1.00 | 1.00 | Model already uses `crypto/rand` |
+
+The plugin loaded the matching skill in every run. Where the model already gets it right, the skills keep it that way; the gains are in the decisions that need current, specific knowledge. The suite grows with every skill.
+
+---
+
 ## What a skill looks like
 
 Every `SKILL.md` has the same shape:

@@ -100,6 +100,23 @@ Uma skill por PR; veja [CONTRIBUTING.pt-BR.md](CONTRIBUTING.pt-BR.md).
 
 ---
 
+## Muda o que os agentes escrevem?
+
+Medido com `claude plugin eval` ([`evals/`](evals/)): o mesmo prompt roda com e sem o plugin, e graders por regex conferem o arquivo que o agente escreve. Duas execuções por lado, outubro de 2026.
+
+| Tarefa | Sem plugin | Com plugin | O que mudou |
+|---|---|---|---|
+| Buscar 10.000 preços em paralelo, parar no primeiro erro | 0,33 | **1,00** | `errgroup` com `SetLimit` em vez de uma goroutine por ID |
+| Criar o pool do pgx para 8 réplicas e orçamento de 200 conexões | 0,50 | **1,00** | `MaxConns` calculado pelo orçamento, jitter no tempo de vida, `pgxpool` sempre |
+| Deployment Kubernetes para uma API Go | 0,67 | **1,00** | Limite de CPU definido, para o `GOMAXPROCS` acompanhar o container |
+| Servidor HTTP de produção | 1,00 | 1,00 | O modelo já define timeouts e shutdown |
+| Converter erros em status HTTP | 1,00 | 1,00 | O modelo já usa sentinelas e `errors.Is` |
+| Token de redefinição de senha | 1,00 | 1,00 | O modelo já usa `crypto/rand` |
+
+O plugin carregou a skill certa em todas as execuções. Onde o modelo já acerta, as skills mantêm o acerto; o ganho aparece nas decisões que exigem conhecimento atual e específico. A suíte cresce a cada skill.
+
+---
+
 ## Como é uma skill
 
 Todo `SKILL.md` tem o mesmo formato:

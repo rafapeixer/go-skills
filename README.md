@@ -55,7 +55,7 @@ Copy the `skills/` folder into wherever your agent loads skills from, or point i
 
 ## Skills
 
-> v1 and v1.1 are ready. The next wave is added one skill per PR.
+> v1, v1.1 and v2 are ready: 24 skills. New skills are added one per PR.
 
 ### v1
 
@@ -83,9 +83,18 @@ Copy the `skills/` folder into wherever your agent loads skills from, or point i
 | [outbound-http-client](skills/outbound-http-client/SKILL.md) | Calling another service over HTTP: building the client and transport, reading bodies, fetching user-supplied URLs | Ready |
 | [go-version-policy](skills/go-version-policy/SKILL.md) | Choosing the `go` and `toolchain` lines, upgrading Go, setting `GOTOOLCHAIN` in CI, pinning tools | Ready |
 
-### Next
+### v2
 
-- **v2:** `observability-otel`, `performance-profiling`, `sqlite-single-node`, `background-jobs-outbox`, `scale-to-zero`, `json-v2`, `wasm-plugins`, `mcp-server-go`.
+| Skill | Use when | Status |
+|---|---|---|
+| [observability-otel](skills/observability-otel/SKILL.md) | Adding OpenTelemetry traces, metrics or logs: SDK setup and shutdown, otelhttp, span names and cardinality, sampling, views, slog bridge | Ready |
+| [performance-profiling](skills/performance-profiling/SKILL.md) | Measuring before optimizing: pprof on an internal listener, flight recorder snapshots, default.pgo, escape analysis, sync.Pool, per-request cost | Ready |
+| [sqlite-single-node](skills/sqlite-single-node/SKILL.md) | Using SQLite as a single-node service's database: driver, per-connection pragmas, one writer and a read pool, BEGIN IMMEDIATE, Litestream | Ready |
+| [background-jobs-outbox](skills/background-jobs-outbox/SKILL.md) | Running work after a write: River InsertTx or an outbox, SKIP LOCKED workers, LISTEN/NOTIFY, retries, worker shutdown | Ready |
+| [scale-to-zero](skills/scale-to-zero/SKILL.md) | Running on Lambda, Cloud Run, Knative or Fly Machines: startup cost, lazy dependencies, SIGTERM within the grace period, Lambda builds | Ready |
+| [json-v2](skills/json-v2/SKILL.md) | Marshaling or decoding JSON, omitzero vs omitempty, custom marshalers, upgrading to Go 1.27 and encoding/json/v2 | Ready |
+| [wasm-plugins](skills/wasm-plugins/SKILL.md) | Letting third parties extend the service: wazero instead of plugin or exec, wasip1 guests, capabilities, CPU and memory limits | Ready |
+| [mcp-server-go](skills/mcp-server-go/SKILL.md) | Exposing a Go service to agents over MCP: official go-sdk, typed tools, stateless streamable HTTP, OAuth bearer tokens, per-call limits | Ready |
 
 One skill per PR; see [CONTRIBUTING.md](CONTRIBUTING.md).
 

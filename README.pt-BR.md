@@ -55,7 +55,7 @@ Copie a pasta `skills/` para o local de onde o seu agente carrega skills, ou apo
 
 ## Skills
 
-> A v1 e a v1.1 estão prontas. A próxima leva entra uma skill por PR.
+> A v1, a v1.1 e a v2 estão prontas: 24 skills. Novas skills entram uma por PR.
 
 ### v1
 
@@ -83,9 +83,18 @@ Copie a pasta `skills/` para o local de onde o seu agente carrega skills, ou apo
 | [outbound-http-client](skills/outbound-http-client/SKILL.md) | Chamar outro serviço por HTTP: montar client e transport, ler corpos de resposta, buscar URLs vindas do usuário | Pronta |
 | [go-version-policy](skills/go-version-policy/SKILL.md) | Escolher as linhas `go` e `toolchain`, atualizar o Go, definir `GOTOOLCHAIN` no CI, fixar ferramentas | Pronta |
 
-### Próximas
+### v2
 
-- **v2:** `observability-otel`, `performance-profiling`, `sqlite-single-node`, `background-jobs-outbox`, `scale-to-zero`, `json-v2`, `wasm-plugins`, `mcp-server-go`.
+| Skill | Use quando | Status |
+|---|---|---|
+| [observability-otel](skills/observability-otel/SKILL.md) | Adicionar traces, métricas ou logs OpenTelemetry: setup e shutdown do SDK, otelhttp, nomes de span e cardinalidade, sampling, views, ponte com slog | Pronta |
+| [performance-profiling](skills/performance-profiling/SKILL.md) | Medir antes de otimizar: pprof num listener interno, snapshots do flight recorder, default.pgo, escape analysis, sync.Pool, custo por requisição | Pronta |
+| [sqlite-single-node](skills/sqlite-single-node/SKILL.md) | Usar SQLite como banco de um serviço de nó único: driver, pragmas por conexão, um writer e um pool de leitura, BEGIN IMMEDIATE, Litestream | Pronta |
+| [background-jobs-outbox](skills/background-jobs-outbox/SKILL.md) | Executar trabalho depois de uma escrita: River InsertTx ou outbox, workers com SKIP LOCKED, LISTEN/NOTIFY, retries, shutdown de workers | Pronta |
+| [scale-to-zero](skills/scale-to-zero/SKILL.md) | Rodar em Lambda, Cloud Run, Knative ou Fly Machines: custo de startup, dependências preguiçosas, SIGTERM dentro do prazo, build para Lambda | Pronta |
+| [json-v2](skills/json-v2/SKILL.md) | Serializar ou decodificar JSON, omitzero ou omitempty, marshalers próprios, migrar para Go 1.27 e encoding/json/v2 | Pronta |
+| [wasm-plugins](skills/wasm-plugins/SKILL.md) | Permitir que terceiros estendam o serviço: wazero em vez de plugin ou exec, guests wasip1, capacidades, limites de CPU e memória | Pronta |
+| [mcp-server-go](skills/mcp-server-go/SKILL.md) | Expor um serviço Go a agentes via MCP: go-sdk oficial, ferramentas tipadas, streamable HTTP stateless, tokens OAuth bearer, limites por chamada | Pronta |
 
 Uma skill por PR; veja [CONTRIBUTING.pt-BR.md](CONTRIBUTING.pt-BR.md).
 

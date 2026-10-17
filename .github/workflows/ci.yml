@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: bash scripts/validate.sh
+
+  examples:
+    runs-on: ubuntu-latest
+    env:
+      # Test with exactly the toolchain the matrix installed, never a silently downloaded one.
+      GOTOOLCHAIN: local
+      RACE: "1"
+    strategy:
+      matrix:
+        # Minimum supported version (the go directive in every example) and the latest stable.
+        go: ["1.26", "stable"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ matrix.go }}
+      - run: bash scripts/test-examples.sh

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash scripts/validate.sh)",
+      "Bash(bash scripts/test-examples.sh)",
+      "Bash(go build:*)",
+      "Bash(go vet:*)",
+      "Bash(go test:*)",
+      "Bash(go mod tidy:*)",
+      "Bash(go fix:*)",
+      "Bash(go version:*)",
+      "Bash(gofmt:*)"
+    ]
+  }
+}

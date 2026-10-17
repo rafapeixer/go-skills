@@ -1,0 +1,12 @@
+{
+  "name": "go-skills",
+  "owner": { "name": "Rafael Peixer", "url": "https://github.com/rafapeixer" },
+  "description": "Opinionated Go skills for coding agents: one design decision per skill.",
+  "plugins": [
+    {
+      "name": "go-skills",
+      "source": "./",
+      "description": "Opinionated skills that teach coding agents to write idiomatic, secure, low-resource Go for backend services."
+    }
+  ]
+}

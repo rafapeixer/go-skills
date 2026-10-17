@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: registry.example.com/api:1.0.0
+          ports:
+            - containerPort: 8080
+          # MISTAKE: no resources at all. Without a CPU limit GOMAXPROCS is the
+          # node's core count (64 on a 64-core node); without a memory limit the
+          # node, not the pod, decides when the process is killed.
+          env:
+            # MISTAKE: GOGC=off with no GOMEMLIMIT and no memory limit. The heap
+            # grows until the kernel OOM-kills the process, on every pod.
+            - name: GOGC
+              value: "off"

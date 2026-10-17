@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          # One multi-arch image index: the node pulls amd64 or arm64.
+          image: registry.example.com/api:1.0.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "1"
+              memory: 512Mi
+            limits:
+              # The CPU limit is what the runtime reads: GOMAXPROCS becomes 2,
+              # not the node's core count. Requests are ignored by the runtime.
+              cpu: "2"
+              # Memory request equals the limit, so the pod is not overcommitted.
+              memory: 512Mi
+          env:
+            # The container memory limit in bytes. The program sets GOMEMLIMIT
+            # to 90% of it. No GOMAXPROCS and no GOGC: the defaults are right.
+            - name: MEMORY_LIMIT_BYTES
+              valueFrom:
+                resourceFieldRef:
+                  containerName: api
+                  resource: limits.memory

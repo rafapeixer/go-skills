@@ -63,6 +63,19 @@ As lições da versão otimizada viraram regras nas skills, e o mesmo agente ger
 
 Com a v3, o EC2 fica em **2 × t4g.micro (US$ 38/mês) para 5.000 req/s** e **3 × t4g.micro (US$ 151/mês, SP: US$ 162) para 20.000 req/s**, contra US$ 270 do Java e US$ 547 do Python na mesma carga.
 
+#### Quanto custa atender 10.000 req/s o mês inteiro
+
+O preço de tabela do t4g.micro (US$ 6,13/mês nos EUA, US$ 9,78 em São Paulo) só vale para uma instância quase parada, abaixo da base de 10% de CPU. Atendendo 10.000 req/s sem parar, a v3 usa 1,77 núcleo (1,75–1,86 nas 3 rodadas) e a AWS cobra o excedente de CPU do modo unlimited:
+
+| | EUA (us-east-1) | Brasil (sa-east-1, São Paulo) |
+|---|---|---|
+| 1 × t4g.micro a 10.000 req/s, medido (sem redundância) | US$ 52/mês | US$ 56/mês |
+| **Go v3: 2 × t4g.micro** (redundância e 30% de folga) | **US$ 76/mês** | **US$ 83/mês** |
+| Java: 5 × t4g.small | US$ 135/mês | US$ 172/mês |
+| Python: 12 × t4g.micro | US$ 273/mês | US$ 317/mês |
+
+10.000 req/s o mês inteiro são 26 bilhões de requisições, cerca de US$ 0,002 por milhão. Só a camada de aplicação; o RDS é o mesmo para todos.
+
 **Leitura honesta:** Java aquecido entrega 60% da capacidade do Go por réplica, com 18 vezes mais memória, precisa aquecer antes de aguentar carga, e desaba quando passa do limite. Python custa 2,6 vezes mais CPU por requisição. A maior diferença do Go não está na média, e sim no comportamento sob pressão: memória plana, nenhum aquecimento, e degradação controlada quando a carga passa da capacidade.
 
 ---

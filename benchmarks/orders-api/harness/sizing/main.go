@@ -47,7 +47,7 @@ var instances = []instance{
 	{"t4g.medium", 4096, 0.4, map[string]float64{"us-east-1": 0.0336, "sa-east-1": 0.0536}},
 }
 
-var loads = []float64{1000, 5000, 20000}
+var loads = []float64{1000, 5000, 10000, 20000}
 
 const (
 	headroom   = 0.7

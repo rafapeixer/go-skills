@@ -30,6 +30,21 @@
 | 5000 req/s | Python 3.13 + FastAPI | t4g.micro | yes | 6 | 0.77 cores | 136.66 | 158.56 |
 | 5000 req/s | Python 3.13 + FastAPI | t4g.small | yes | 6 | 0.77 cores | 138.41 | 182.21 |
 | 5000 req/s | Python 3.13 + FastAPI | t4g.medium | yes | 6 | 0.77 cores | 211.99 | 299.59 |
+| 10000 req/s | Go (go-skills 0.4.1) | t4g.micro | yes | 2 | 1.28 cores | 75.63 | 82.93 |
+| 10000 req/s | Go (go-skills 0.4.1) | t4g.small | yes | 2 | 1.28 cores | 76.21 | 90.81 |
+| 10000 req/s | Go (go-skills 0.4.1) | t4g.medium | yes | 2 | 1.28 cores | 100.74 | 129.94 |
+| 10000 req/s | Go (tuned) | t4g.micro | yes | 2 | 1.39 cores | 81.47 | 88.77 |
+| 10000 req/s | Go (tuned) | t4g.small | yes | 2 | 1.39 cores | 82.05 | 96.65 |
+| 10000 req/s | Go (tuned) | t4g.medium | yes | 2 | 1.39 cores | 106.58 | 135.78 |
+| 10000 req/s | Go (with go-skills) | t4g.micro | yes | 3 | 1.02 cores | 89.94 | 100.89 |
+| 10000 req/s | Go (with go-skills) | t4g.small | yes | 3 | 1.02 cores | 90.81 | 112.71 |
+| 10000 req/s | Go (with go-skills) | t4g.medium | yes | 3 | 1.02 cores | 127.60 | 171.40 |
+| 10000 req/s | Java 25 + Spring Boot (warm JVM) | t4g.micro | **no** (peak 949 MiB) | 5 | 0.91 cores | 133.74 | 151.99 |
+| 10000 req/s | Java 25 + Spring Boot (warm JVM) | t4g.small | yes | 5 | 0.91 cores | 135.20 | 171.70 |
+| 10000 req/s | Java 25 + Spring Boot (warm JVM) | t4g.medium | yes | 5 | 0.91 cores | 196.52 | 269.52 |
+| 10000 req/s | Python 3.13 + FastAPI | t4g.micro | yes | 12 | 0.77 cores | 273.31 | 317.11 |
+| 10000 req/s | Python 3.13 + FastAPI | t4g.small | yes | 12 | 0.77 cores | 276.82 | 364.42 |
+| 10000 req/s | Python 3.13 + FastAPI | t4g.medium | yes | 12 | 0.77 cores | 423.98 | 599.18 |
 | 20000 req/s | Go (go-skills 0.4.1) | t4g.micro | yes | 3 | 1.71 cores | 150.96 | 161.91 |
 | 20000 req/s | Go (go-skills 0.4.1) | t4g.small | yes | 3 | 1.71 cores | 151.84 | 173.74 |
 | 20000 req/s | Go (go-skills 0.4.1) | t4g.medium | yes | 3 | 1.71 cores | 188.63 | 232.43 |

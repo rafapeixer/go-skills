@@ -74,7 +74,32 @@ O preço de tabela do t4g.micro (US$ 6,13/mês nos EUA, US$ 9,78 em São Paulo) 
 | Java: 5 × t4g.small | US$ 135/mês | US$ 172/mês |
 | Python: 12 × t4g.micro | US$ 273/mês | US$ 317/mês |
 
-10.000 req/s o mês inteiro são 26 bilhões de requisições, cerca de US$ 0,002 por milhão. Só a camada de aplicação; o RDS é o mesmo para todos.
+10.000 req/s o mês inteiro são 26 bilhões de requisições, cerca de US$ 0,002 por milhão.
+
+#### Custo total com o banco (RDS PostgreSQL)
+
+A CPU do Postgres por requisição foi parecida em todas as implementações, de 0,17 a 0,21 ms medidos a 1.200 req/s, porque as queries são as mesmas. A 10.000 req/s o Postgres usou **1,5 núcleo de 2** (1,45–1,64 nas 3 rodadas da v3). O que muda entre as linguagens é quantas conexões a frota abre:
+
+| Para 10.000 req/s | Réplicas | Pool por réplica | Conexões no banco | RDS necessário |
+|---|---|---|---|---|
+| Go v3 | 2 | 8 | **16** | db.t4g.micro |
+| Java | 5 | 8 (fixas, sempre abertas) | 40 | db.t4g.micro |
+| Python | 12 | 2 workers × 4 | **96**, acima do orçamento de 80 | db.t4g.small (ou PgBouncer) |
+
+O RDS T4g também roda em modo unlimited: preço por hora + US$ 0,075 por vCPU-hora acima da base (micro 10% × 2 = 0,2 núcleo; small 20% × 2 = 0,4). Armazenamento: 20 GB gp3 (US$ 2,30/mês nos EUA, US$ 4,38 em São Paulo). Single-AZ.
+
+| 10.000 req/s, por mês | Go v3 | Java | Python |
+|---|---|---|---|
+| **EUA** · EC2 | US$ 75,63 | US$ 135,20 | US$ 273,31 |
+| **EUA** · RDS + disco | US$ 85,16 (micro) | US$ 85,16 (micro) | US$ 85,89 (small) |
+| **EUA · total** | **US$ 160,79** | US$ 220,36 | US$ 359,20 |
+| **Brasil** · EC2 | US$ 82,93 | US$ 171,70 | US$ 317,11 |
+| **Brasil** · RDS + disco | US$ 100,38 (micro) | US$ 100,38 (micro) | US$ 114,98 (small) |
+| **Brasil · total** | **US$ 183,31** | US$ 272,08 | US$ 432,09 |
+
+Com o banco incluído, o Go fica **27% mais barato que o Java nos EUA e 33% em São Paulo**, e **55% a 58% mais barato que o Python**. O banco custa o mesmo que a frota Go inteira; para o Go, otimizar queries (como o `LEFT JOIN LATERAL` da v3) passa a valer tanto quanto otimizar a aplicação. Com Multi-AZ, o RDS dobra para todos.
+
+O que não foi medido: **MySQL** (a especificação usa Postgres), o `max_connections` real de um RDS (a AWS desconta memória reservada, então o padrão de um db.t4g.micro fica abaixo de 112), e cargas acima de 10.000 req/s no banco: a 20.000 req/s o Postgres precisaria de cerca de 3 núcleos, mais do que qualquer RDS T4g de 2 vCPU entrega, e essa faixa não foi testada.
 
 **Leitura honesta:** Java aquecido entrega 60% da capacidade do Go por réplica, com 18 vezes mais memória, precisa aquecer antes de aguentar carga, e desaba quando passa do limite. Python custa 2,6 vezes mais CPU por requisição. A maior diferença do Go não está na média, e sim no comportamento sob pressão: memória plana, nenhum aquecimento, e degradação controlada quando a carga passa da capacidade.
 

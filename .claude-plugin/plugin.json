@@ -1,6 +1,6 @@
 {
   "name": "go-skills",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Opinionated skills that teach coding agents to write idiomatic, secure, low-resource Go for backend services.",
   "author": { "name": "Rafael Peixer", "url": "https://github.com/rafapeixer" },
   "homepage": "https://github.com/rafapeixer/go-skills",

@@ -43,6 +43,26 @@ Verified separately, 3 runs:
 
 One caveat: in the 8-replica scenario (S2), one of 5 tuned runs hit a database slowdown that filled the pools (65 connections) and produced 0.5% errors; the other 4 were clean, and the go-skills version was clean in all 5. The logs show the database slowing down for every operation at once, not the service; it is recorded here because it happened.
 
+### The skills learn: v1 → v2 → v3
+
+The tuned version's lessons became rules in the skills, and the same agent generated the service again from the same specification, with no manual changes afterwards:
+
+| | v1 (go-skills 0.3) | Hand-tuned | v2 (go-skills 0.4.0) | **v3 (go-skills 0.4.1)** |
+|---|---|---|---|---|
+| Capacity within SLO, 3 runs | 5,000 · 5,000 · 5,000 | 10,000 · 8,000 · 10,000 | 4,000 · 4,000 · 4,000 | **10,000 · 10,000 · 10,000** |
+| 10,000 req/s | 17% errors | 0.65% | 16% | **0.09%** |
+| 12,000 req/s | — | 17.7% | 33% | **5.4%** |
+| 14,000 req/s | — | 38.9% | 46% | **25.7%** |
+| CPU per request at 3,000 req/s | 0.305 ms | 0.277 ms | 0.260 ms | **0.257 ms** |
+| p99 with pricing at 1.5 s | 1,594 ms | 3 ms | 2 ms | **2 ms** |
+| 8 replicas (S2) | clean | 1 run with 0.5% in 5 | clean | **clean**, 21 of 80 connections |
+
+- **v2** took the `LEFT JOIN LATERAL` query, the circuit breaker and the no-wait bulkhead from the skills, and got the lowest CPU per request. But it sized the pricing bulkhead at 64 from an assumed 1,000 calls/s per replica, a quarter of what the replica actually admits. Every one of its errors (25,000 in one run) was "bulkhead full", with idle CPU and p99 at 32 ms.
+- The `overload-protection` rule was corrected to **size from the peak the replica admits** (capacity × calls per request × latency), not from an assumed average.
+- **v3**, generated with the corrected rule, sized the bulkhead at 256 and beat the hand-tuned version on every row of the table.
+
+With v3, EC2 comes to **2 × t4g.micro (US$ 38/month) for 5,000 req/s** and **3 × t4g.micro (US$ 151/month, SP: US$ 162) for 20,000 req/s**, against US$ 270 for Java and US$ 547 for Python at the same load.
+
 **Plain reading:** a warm JVM delivers 60% of Go's capacity per replica with 18 times the memory, needs to warm up before it can take load, and collapses past its limit. Python costs 2.6 times more CPU per request. Go's biggest difference is not in the averages but under pressure: flat memory, no warm-up, and controlled degradation when load exceeds capacity.
 
 ---

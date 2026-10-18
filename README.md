@@ -115,7 +115,7 @@ Measured with `claude plugin eval` ([`evals/`](evals/)): the same prompt runs wi
 
 The plugin loaded the matching skill in every run. Where the model already gets it right, the skills keep it that way; the gains are in the decisions that need current, specific knowledge. The suite grows with every skill.
 
-**Under load:** [BENCHMARKS.md](BENCHMARKS.md) runs the same service written in Go (with and without go-skills), Java and Python inside AWS t4g.micro-sized containers, 3 times per scenario. Go served 5,000 req/s per replica with 15 MiB of memory, shed overload with fast 503s instead of collapsing, and came out 33–67% cheaper on EC2.
+**Under load:** [BENCHMARKS.md](BENCHMARKS.md) runs the same service written in Go (with and without go-skills), Java and Python inside AWS t4g.micro-sized containers, 3 times per scenario. Go served 5,000 req/s per replica with 15 MiB of memory, shed overload with fast 503s instead of collapsing, and came out 33–67% cheaper on EC2. After the lessons from a profile-guided tuning were folded back into the skills, the same agent regenerated the service with go-skills 0.4.1 and reached 10,000 req/s per replica in all three runs, beating the hand-tuned version.
 
 ---
 

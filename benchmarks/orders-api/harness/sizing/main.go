@@ -34,6 +34,7 @@ type instance struct {
 }
 
 var impls = []impl{
+	{"Go (go-skills 0.4.1)", 10000, 0.257, 56},
 	{"Go (tuned)", 10000, 0.277, 54},
 	{"Go (with go-skills)", 5000, 0.305, 35},
 	{"Java 25 + Spring Boot (warm JVM)", 3000, 0.453, 949},

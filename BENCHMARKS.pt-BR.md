@@ -43,6 +43,26 @@ Verificado à parte, 3 rodadas:
 
 Uma ressalva: no cenário de 8 réplicas (S2), uma das 5 rodadas do Go otimizado teve uma lentidão do banco que encheu os pools (65 conexões) e gerou 0,5% de erros; as outras 4 ficaram limpas, e a versão com go-skills ficou limpa nas 5. Pela leitura dos logs, foi o banco que ficou lento para todas as operações ao mesmo tempo, não o serviço; o registro fica aqui porque aconteceu.
 
+### As skills aprendem: v1 → v2 → v3
+
+As lições da versão otimizada viraram regras nas skills, e o mesmo agente gerou o serviço de novo a partir da mesma especificação, sem nenhum ajuste manual depois:
+
+| | v1 (go-skills 0.3) | Otimizado à mão | v2 (go-skills 0.4.0) | **v3 (go-skills 0.4.1)** |
+|---|---|---|---|---|
+| Capacidade dentro do SLO, 3 rodadas | 5.000 · 5.000 · 5.000 | 10.000 · 8.000 · 10.000 | 4.000 · 4.000 · 4.000 | **10.000 · 10.000 · 10.000** |
+| 10.000 req/s | 17% de erros | 0,65% | 16% | **0,09%** |
+| 12.000 req/s | — | 17,7% | 33% | **5,4%** |
+| 14.000 req/s | — | 38,9% | 46% | **25,7%** |
+| CPU por requisição a 3.000 req/s | 0,305 ms | 0,277 ms | 0,260 ms | **0,257 ms** |
+| p99 com o serviço de preços em 1,5 s | 1.594 ms | 3 ms | 2 ms | **2 ms** |
+| 8 réplicas (S2) | limpo | 1 rodada com 0,5% em 5 | limpo | **limpo**, 21 de 80 conexões |
+
+- **v2** trouxe das skills a query com `LEFT JOIN LATERAL`, o circuit breaker e o bulkhead sem espera, e com isso ganhou a menor CPU por requisição. Mas dimensionou o bulkhead do serviço de preços em 64 vagas, a partir de uma suposição de 1.000 chamadas/s por réplica, um quarto do que a réplica realmente admite. Todos os erros dela (25 mil numa rodada) foram "bulkhead cheio", com a CPU ociosa e p99 em 32 ms.
+- A regra do `overload-protection` foi corrigida para **dimensionar pelo pico que a réplica admite** (capacidade × chamadas por requisição × latência), não por uma média suposta.
+- **v3**, gerada com a regra corrigida, dimensionou o bulkhead em 256 e passou a versão otimizada à mão em todas as linhas da tabela.
+
+Com a v3, o EC2 fica em **2 × t4g.micro (US$ 38/mês) para 5.000 req/s** e **3 × t4g.micro (US$ 151/mês, SP: US$ 162) para 20.000 req/s**, contra US$ 270 do Java e US$ 547 do Python na mesma carga.
+
 **Leitura honesta:** Java aquecido entrega 60% da capacidade do Go por réplica, com 18 vezes mais memória, precisa aquecer antes de aguentar carga, e desaba quando passa do limite. Python custa 2,6 vezes mais CPU por requisição. A maior diferença do Go não está na média, e sim no comportamento sob pressão: memória plana, nenhum aquecimento, e degradação controlada quando a carga passa da capacidade.
 
 ---

@@ -1,0 +1,5 @@
+# lurie-guard configuration: https://github.com/lurielabs/lurie-guard
+version: 1
+# The bad examples are wrong on purpose; every other migration in this repository is checked.
+exclude:
+  - "skills/*/examples/bad/**"
